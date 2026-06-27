@@ -1,0 +1,211 @@
+name: CI/CD — SCA-IT
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  # ============================================================
+  # Job 1: Tests (Pest)
+  # ============================================================
+  tests:
+    name: Tests PHP
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_DB: sca_it_test
+          POSTGRES_USER: sca_user
+          POSTGRES_PASSWORD: sca_secret
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP 8.4
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.4"
+          extensions: pdo, pdo_pgsql, gd, zip, bcmath, intl
+
+      - name: Instalar dependencias PHP
+        run: composer install --no-interaction --prefer-dist
+
+      - name: Copiar .env de prueba
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+
+      - name: Configurar .env para tests
+        run: |
+          sed -i 's/DB_CONNECTION=.*/DB_CONNECTION=pgsql/' .env
+          sed -i 's/DB_HOST=.*/DB_HOST=127.0.0.1/' .env
+          sed -i 's/DB_PORT=.*/DB_PORT=5432/' .env
+          sed -i 's/DB_DATABASE=.*/DB_DATABASE=sca_it_test/' .env
+          sed -i 's/DB_USERNAME=.*/DB_USERNAME=sca_user/' .env
+          sed -i 's/DB_PASSWORD=.*/DB_PASSWORD=sca_secret/' .env
+
+      - name: Ejecutar migraciones
+        run: php artisan migrate --force
+
+      - name: Ejecutar tests Pest
+        run: php artisan test --compact
+
+  # ============================================================
+  # Job 2: Build imagen Docker + Scan Trivy
+  # ============================================================
+  build-and-scan:
+    name: Build + Scan Trivy
+    runs-on: ubuntu-latest
+    needs: tests
+    if: github.ref == 'refs/heads/main'
+
+    permissions:
+      contents: read
+      packages: write
+      security-events: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - name: Login a GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Metadata de la imagen
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=sha,prefix=sha-
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build imagen Docker
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: false
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          load: true
+
+      - name: Scan de vulnerabilidades con Trivy
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest"
+          format: "sarif"
+          output: "trivy-results.sarif"
+          severity: "CRITICAL,HIGH"
+          exit-code: "0"
+
+      - name: Subir resultados de Trivy a GitHub Security
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: "trivy-results.sarif"
+
+      - name: Push imagen a GHCR
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+  # ============================================================
+  # Job 3: Deploy a EC2 via SSH
+  # ============================================================
+  deploy:
+    name: Deploy a AWS EC2
+    runs-on: ubuntu-latest
+    needs: build-and-scan
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Deploy a EC2-A (us-east-1a)
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.EC2_A_IP }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            docker pull ghcr.io/${{ github.repository }}:latest
+            docker stop sca-it || true
+            docker rm sca-it || true
+            docker run -d \
+              --name sca-it \
+              --restart unless-stopped \
+              -p 8080:8080 \
+              -e APP_ENV=production \
+              -e APP_DEBUG=false \
+              -e APP_KEY="${{ secrets.APP_KEY }}" \
+              -e DB_CONNECTION=pgsql \
+              -e DB_HOST="${{ secrets.DB_HOST }}" \
+              -e DB_PORT=5432 \
+              -e DB_DATABASE=sca_it \
+              -e DB_USERNAME=sca_user \
+              -e DB_PASSWORD="${{ secrets.DB_PASSWORD }}" \
+              -e SESSION_DRIVER=database \
+              -e CACHE_STORE=database \
+              -e FILESYSTEM_DISK=azure \
+              -e AZURE_STORAGE_NAME="${{ secrets.AZURE_STORAGE_NAME }}" \
+              -e AZURE_STORAGE_KEY="${{ secrets.AZURE_STORAGE_KEY }}" \
+              -e AZURE_STORAGE_CONTAINER=activos \
+              ghcr.io/${{ github.repository }}:latest
+            sleep 15
+            docker exec sca-it php artisan migrate --force
+
+      - name: Deploy a EC2-B (us-east-1b)
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.EC2_B_IP }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            docker pull ghcr.io/${{ github.repository }}:latest
+            docker stop sca-it || true
+            docker rm sca-it || true
+            docker run -d \
+              --name sca-it \
+              --restart unless-stopped \
+              -p 8080:8080 \
+              -e APP_ENV=production \
+              -e APP_DEBUG=false \
+              -e APP_KEY="${{ secrets.APP_KEY }}" \
+              -e DB_CONNECTION=pgsql \
+              -e DB_HOST="${{ secrets.DB_HOST }}" \
+              -e DB_PORT=5432 \
+              -e DB_DATABASE=sca_it \
+              -e DB_USERNAME=sca_user \
+              -e DB_PASSWORD="${{ secrets.DB_PASSWORD }}" \
+              -e SESSION_DRIVER=database \
+              -e CACHE_STORE=database \
+              -e FILESYSTEM_DISK=azure \
+              -e AZURE_STORAGE_NAME="${{ secrets.AZURE_STORAGE_NAME }}" \
+              -e AZURE_STORAGE_KEY="${{ secrets.AZURE_STORAGE_KEY }}" \
+              -e AZURE_STORAGE_CONTAINER=activos \
+              ghcr.io/${{ github.repository }}:latest
