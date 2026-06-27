@@ -1,0 +1,16 @@
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: sca_it_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: sca_it
+      POSTGRES_USER: sca_user
+      POSTGRES_PASSWORD: sca_secret
+    ports:
+      - "5432:5432"
+    volumes:
+      - sca_db_data:/var/lib/postgresql/data
+
+volumes:
+  sca_db_data:
