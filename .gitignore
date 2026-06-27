@@ -1,3 +1,4 @@
+# Laravel
 /.phpunit.cache
 /bootstrap/ssr
 /node_modules
@@ -22,8 +23,17 @@ Homestead.yaml
 npm-debug.log
 yarn-error.log
 /auth.json
+
+# IDEs y editores
 /.fleet
 /.idea
 /.nova
 /.vscode
 /.zed
+
+# Herramientas IA locales (no van al repo)
+/.agents
+/.ai
+/.claude
+/.cursor
+/.junie
