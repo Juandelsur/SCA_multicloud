@@ -37,3 +37,9 @@ yarn-error.log
 /.claude
 /.cursor
 /.junie
+
+#Carpeta Infra
+infra/terraform.tfvars
+infra/.terraform
+infra/*.tfstate
+infra/*.tfstate.backup

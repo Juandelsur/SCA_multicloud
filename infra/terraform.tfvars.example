@@ -1,0 +1,39 @@
+# =============================================================
+# terraform.tfvars.example
+# Copiar a terraform.tfvars y completar con valores reales
+# NUNCA subir terraform.tfvars al repositorio (está en .gitignore)
+# =============================================================
+
+project_name = "sca-it"
+aws_region   = "us-east-1"
+
+# AMI Ubuntu 22.04 LTS us-east-1 (verificar vigencia en AWS Console)
+ec2_ami = "ami-0c7217cdde317cfec"
+
+# Crear en AWS Console > EC2 > Key Pairs > Create key pair
+# Descargar el .pem y guardarlo en ~/.ssh/
+key_pair_name = "sca-it-key"
+
+# Tu IP pública + /32 (busca 'mi ip' en Google)
+ssh_allowed_cidr = "TU_IP_PUBLICA/32"
+
+# Rol de instancia del AWS Academy Lab
+# Verificar en AWS Console > IAM > Roles > LabRole > Instance profiles
+lab_instance_profile = "LabInstanceProfile"
+
+# Base de datos RDS
+db_name     = "sca_it"
+db_username = "sca_user"
+db_password = "CambiarPorPasswordSeguro123!"
+
+# Imagen Docker publicada en GitHub Container Registry
+# Formato: ghcr.io/USUARIO_GITHUB/sca_multicloud:latest
+docker_image = "ghcr.io/juandelsur/sca_multicloud:latest"
+
+# APP_KEY de Laravel (copiar del .env local)
+app_key = "base64:COPIAR_DEL_ENV_LOCAL"
+
+# Azure Blob Storage
+azure_storage_name      = "scaitfotos2026"
+azure_storage_key       = "COPIAR_DEL_PORTAL_AZURE"
+azure_storage_container = "activos"
