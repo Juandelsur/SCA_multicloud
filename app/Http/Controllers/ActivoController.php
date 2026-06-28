@@ -82,8 +82,12 @@ class ActivoController extends Controller
         ]);
 
         return Inertia::render('Activos/Show', [
-            'activo'   => $activo,
-            'foto_url' => $activo->fotoUrl(),
+            'activo'      => $activo,
+            'foto_url'    => $activo->fotoUrl(),
+            'ubicaciones' => Ubicacion::with('departamento:id,nombre_departamento')
+                ->orderBy('nombre_ubicacion')
+                ->get(['id', 'nombre_ubicacion', 'departamento_id']),
+            'toast'       => request('toast'),
         ]);
     }
 
@@ -176,8 +180,7 @@ class ActivoController extends Controller
             ]);
         });
 
-        return redirect()->route('activos.show', $activo)
-            ->with('success', 'Activo movilizado correctamente.');
+        return redirect()->route('activos.show', [$activo->id, 'toast' => 'Activo movilizado correctamente.']);
     }
 
     /** Devuelve los datos de etiqueta + QR en SVG para cada activo seleccionado (endpoint JSON). */

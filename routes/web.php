@@ -48,8 +48,26 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 
     Route::middleware('permission:activos.movilizar')->group(function () {
+        Route::get('activos/{activo}/movilizar', function (\App\Models\Activo $activo) {
+            $activo->load(['tipo', 'estado', 'ubicacionActual.departamento']);
+            $ubicaciones = \App\Models\Ubicacion::with('departamento')
+                ->orderBy('nombre_ubicacion')
+                ->get(['id', 'nombre_ubicacion', 'departamento_id']);
+            return inertia('Activos/Movilizar', [
+                'activo'     => $activo,
+                'ubicaciones' => $ubicaciones,
+            ]);
+        })->name('activos.movilizar.form');
+
         Route::post('activos/{activo}/movilizar', [ActivoController::class, 'movilizar'])->name('activos.movilizar');
     });
+
+    Route::get('/api/activos/buscar', function (\Illuminate\Http\Request $request) {
+        $codigo = strtoupper($request->query('codigo', ''));
+        $activo = \App\Models\Activo::where('codigo_inventario', $codigo)->first();
+        if (!$activo) return response()->json(['error' => 'No encontrado'], 404);
+        return response()->json(['id' => $activo->id, 'codigo' => $activo->codigo_inventario]);
+    })->name('api.activos.buscar');
 
     // =========================================================
     // HISTORIAL — todos los roles con permiso historial.ver
@@ -78,6 +96,63 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::resource('usuarios', UsuarioController::class);
         Route::post('usuarios/{usuario}/rol', [UsuarioController::class, 'asignarRol'])->name('usuarios.rol');
     });
+});
+
+// =========================================================
+// TÉCNICO — dashboard móvil del técnico hospitalario
+// =========================================================
+Route::middleware(['auth', 'role:Técnico'])->group(function () {
+    Route::get('/tecnico', function () {
+        $movimientos = \App\Models\HistorialMovimiento::with([
+            'activo:id,codigo_inventario,marca,modelo',
+            'ubicacionDestino:id,nombre_ubicacion',
+            'usuarioRegistra:id,name',
+        ])->latest()->take(10)->get();
+
+        return inertia('Tecnico/Home', [
+            'ultimosMovimientos' => $movimientos,
+        ]);
+    })->name('tecnico.home');
+
+    Route::get('/tecnico/scan', function () {
+        $ultimosMovimientos = \App\Models\HistorialMovimiento::with([
+            'activo:id,codigo_inventario,marca,modelo',
+            'usuarioRegistra:id,name',
+            'ubicacionOrigen:id,nombre_ubicacion',
+            'ubicacionDestino:id,nombre_ubicacion',
+        ])->latest()->take(5)->get();
+
+        return inertia('Tecnico/Scan', [
+            'ultimosMovimientos' => $ultimosMovimientos,
+        ]);
+    })->name('tecnico.scan');
+
+    Route::get('/tecnico/imprimir', function () {
+        // Relaciones correctas del modelo Activo: tipo(), estado(), ubicacionActual()
+        // FK columns: tipo_id, estado_id (no tipo_equipo_id/estado_activo_id)
+        $activos = \App\Models\Activo::with([
+            'ubicacionActual:id,nombre_ubicacion',
+            'tipo:id,nombre_tipo',
+            'estado:id,nombre_estado',
+        ])->orderBy('marca')->get([
+            'id', 'codigo_inventario', 'marca', 'modelo',
+            'numero_serie', 'ubicacion_actual_id', 'tipo_id', 'estado_id',
+        ]);
+
+        $ubicaciones = \App\Models\Ubicacion::with('departamento:id,nombre_departamento')
+            ->orderBy('nombre_ubicacion')
+            ->get(['id', 'nombre_ubicacion', 'codigo_qr', 'departamento_id']);
+
+        $departamentos = \App\Models\Departamento::orderBy('nombre_departamento')
+            ->get(['id', 'nombre_departamento']);
+
+        $marcas = \App\Models\Activo::distinct()->pluck('marca')->filter()->sort()->values();
+        $tipos  = \App\Models\TipoEquipo::orderBy('nombre_tipo')->get(['id', 'nombre_tipo']);
+
+        return inertia('Tecnico/Imprimir', compact(
+            'activos', 'ubicaciones', 'departamentos', 'marcas', 'tipos'
+        ));
+    })->name('tecnico.imprimir');
 });
 
 require __DIR__.'/settings.php';
