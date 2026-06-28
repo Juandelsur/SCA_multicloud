@@ -43,8 +43,15 @@ function tiempoRelativo(fecha: string): string {
     const mins  = Math.floor(diff / 60_000);
     const horas = Math.floor(diff / 3_600_000);
     const dias  = Math.floor(diff / 86_400_000);
-    if (mins < 60)  return `${mins}m`;
-    if (horas < 24) return `${horas}h`;
+
+    if (mins < 60)  {
+return `${mins}m`;
+}
+
+    if (horas < 24) {
+return `${horas}h`;
+}
+
     return `${dias}d`;
 }
 
@@ -77,7 +84,10 @@ function QrScanner({ onResult, onClose, stopRef }: {
     const decodedRef = useRef(false);
 
     useEffect(() => {
-        if (startedRef.current) return;
+        if (startedRef.current) {
+return;
+}
+
         startedRef.current = true;
 
         const stopCamera = async () => {
@@ -86,11 +96,12 @@ function QrScanner({ onResult, onClose, stopRef }: {
                     await scannerRef.current.stop();
                     scannerRef.current.clear();
                 }
-            } catch {}
+            } catch { /* ignorar error de stop */ }
 
             document.querySelectorAll('video').forEach(video => {
                 const el = video as HTMLVideoElement;
                 const stream = el.srcObject as MediaStream | null;
+
                 if (stream) {
                     stream.getTracks().forEach(t => t.stop());
                     el.srcObject = null;
@@ -103,10 +114,15 @@ function QrScanner({ onResult, onClose, stopRef }: {
         const config = { fps: 10, qrbox: { width: 250, height: 250 } };
 
         const onDecode = (text: string) => {
-            if (decodedRef.current) return;
+            if (decodedRef.current) {
+return;
+}
+
             decodedRef.current = true;
 
-            stopCamera().finally(() => { onResult(text); });
+            stopCamera().finally(() => {
+ onResult(text); 
+});
         };
 
         import('html5-qrcode').then(({ Html5Qrcode }) => {
@@ -115,10 +131,16 @@ function QrScanner({ onResult, onClose, stopRef }: {
 
             Html5Qrcode.getCameras()
                 .then((cams: any[]) => {
-                    if (!cams.length) { onClose(); return; }
+                    if (!cams.length) {
+ onClose();
+
+ return; 
+}
+
                     const cam = cams.find(c =>
                         /back|rear|trasera/i.test(c.label)
                     ) ?? cams[cams.length - 1];
+
                     return scanner.start(cam.id, config, onDecode, () => {});
                 })
                 .catch(() => {
@@ -128,7 +150,9 @@ function QrScanner({ onResult, onClose, stopRef }: {
                 });
         });
 
-        return () => { stopCamera(); };
+        return () => {
+ stopCamera(); 
+};
     }, []);
 
     return (
@@ -159,14 +183,20 @@ export default function TecnicoScan({ ultimosMovimientos }: Props) {
     const safeStopRef = useRef<() => Promise<void>>(async () => {});
 
     useEffect(() => {
-        const handleBefore = () => { safeStopRef.current().catch(() => {}); };
+        const handleBefore = () => {
+ safeStopRef.current().catch(() => {}); 
+};
         document.addEventListener('inertia:before', handleBefore);
+
         return () => document.removeEventListener('inertia:before', handleBefore);
     }, []);
 
     async function handleBuscarCodigo(code: string) {
         const upperCode = code.trim().toUpperCase();
-        if (!upperCode) return;
+
+        if (!upperCode) {
+return;
+}
 
         setSearching(true);
         setSearchError('');
@@ -182,6 +212,7 @@ export default function TecnicoScan({ ultimosMovimientos }: Props) {
                 `/api/activos/buscar?codigo=${encodeURIComponent(upperCode)}`,
                 { headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' } }
             );
+
             if (response.ok) {
                 const data = await response.json();
                 router.visit(activosShow({ activo: data.id }).url);
@@ -270,8 +301,14 @@ export default function TecnicoScan({ ultimosMovimientos }: Props) {
                         <input
                             type="text"
                             value={manualCode}
-                            onChange={e => { setManualCode(e.target.value); setSearchError(''); }}
-                            onKeyDown={e => { if (e.key === 'Enter') handleBuscar(); }}
+                            onChange={e => {
+ setManualCode(e.target.value); setSearchError(''); 
+}}
+                            onKeyDown={e => {
+ if (e.key === 'Enter') {
+handleBuscar();
+} 
+}}
                             placeholder="Código de activo o ubicación"
                             className="w-full pl-9 pr-3 py-3 border border-gray-300 rounded-xl text-sm text-gray-700 bg-white"
                         />
@@ -313,6 +350,7 @@ export default function TecnicoScan({ ultimosMovimientos }: Props) {
                         <ul>
                             {ultimosMovimientos.map(mov => {
                                 const meta = movMeta(mov.tipo_movimiento);
+
                                 return (
                                     <li
                                         key={mov.id}

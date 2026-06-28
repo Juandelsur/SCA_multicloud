@@ -10,10 +10,10 @@ import {
     Printer,
     QrCode,
 } from 'lucide-react';
-import { create as activosCreate, index as activosIndex } from '@/routes/activos';
-import { imprimir as tecnicoImprimir, scan as tecnicoScan } from '@/routes/tecnico';
-import { index as historialIndex } from '@/routes/historial';
 import { logout } from '@/routes';
+import { create as activosCreate, index as activosIndex } from '@/routes/activos';
+import { index as historialIndex } from '@/routes/historial';
+import { imprimir as tecnicoImprimir, scan as tecnicoScan } from '@/routes/tecnico';
 
 // -------------------------------------------------------
 // Tipos
@@ -51,6 +51,7 @@ interface Props {
 // -------------------------------------------------------
 function fechaRelativa(iso: string): string {
     const d = new Date(iso);
+
     return d.toLocaleDateString('es-CL', { day: 'numeric', month: 'short' });
 }
 

@@ -19,7 +19,7 @@ import {
     X,
 } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { logout } from '@/routes';
 import { index as historialIndex } from '@/routes/historial';
 import { home as tecnicoHome } from '@/routes/tecnico';
@@ -117,10 +117,9 @@ function TabActivos({
         const matchTipo  = !filtroTipo  || a.tipo?.nombre_tipo === filtroTipo;
         const matchUbic  = !filtroUbicacionActual ||
             a.ubicacion_actual?.nombre_ubicacion === filtroUbicacionActual;
+
         return matchSearch && matchMarca && matchTipo && matchUbic;
     }), [activos, searchActivo, filtroMarca, filtroTipo, filtroUbicacionActual]);
-
-    useEffect(() => { setPageActivos(1); }, [searchActivo, filtroMarca, filtroTipo, filtroUbicacionActual]);
 
     const totalPages    = Math.max(1, Math.ceil(activosFiltrados.length / PER_PAGE));
     const pageSafe      = Math.min(pageActivos, totalPages);
@@ -135,6 +134,7 @@ function TabActivos({
         setSelectedActivos(prev => {
             const next = new Set(prev);
             activosPagina.forEach(a => checked ? next.add(a.id) : next.delete(a.id));
+
             return next;
         });
     }
@@ -142,7 +142,13 @@ function TabActivos({
     function toggleActivo(id: number) {
         setSelectedActivos(prev => {
             const next = new Set(prev);
-            next.has(id) ? next.delete(id) : next.add(id);
+
+            if (next.has(id)) {
+ next.delete(id); 
+} else {
+ next.add(id); 
+}
+
             return next;
         });
     }
@@ -173,14 +179,18 @@ function TabActivos({
                         <input
                             type="text"
                             value={searchActivo}
-                            onChange={e => { setSearchActivo(e.target.value); setPageActivos(1); }}
+                            onChange={e => {
+ setSearchActivo(e.target.value); setPageActivos(1); 
+}}
                             placeholder="Buscar activo..."
                             className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-700 bg-white"
                         />
                     </div>
                     <select
                         value={filtroMarca}
-                        onChange={e => { setFiltroMarca(e.target.value); setPageActivos(1); }}
+                        onChange={e => {
+ setFiltroMarca(e.target.value); setPageActivos(1); 
+}}
                         className="border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-700 bg-white min-w-[140px]"
                         style={{ color: '#374151' }}
                     >
@@ -191,7 +201,9 @@ function TabActivos({
                     </select>
                     <select
                         value={filtroTipo}
-                        onChange={e => { setFiltroTipo(e.target.value); setPageActivos(1); }}
+                        onChange={e => {
+ setFiltroTipo(e.target.value); setPageActivos(1); 
+}}
                         className="border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-700 bg-white min-w-[160px]"
                         style={{ color: '#374151' }}
                     >
@@ -204,7 +216,9 @@ function TabActivos({
                 <div className="flex gap-3">
                     <select
                         value={filtroUbicacionActual}
-                        onChange={e => { setFiltroUbicacionActual(e.target.value); setPageActivos(1); }}
+                        onChange={e => {
+ setFiltroUbicacionActual(e.target.value); setPageActivos(1); 
+}}
                         className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-700 bg-white"
                         style={{ color: '#374151' }}
                     >
@@ -395,8 +409,6 @@ function TabUbicaciones({ activos, ubicaciones, departamentos, cola, setCola }: 
         [ubicaciones, filtroDept]
     );
 
-    useEffect(() => { setFiltroUbic(''); }, [filtroDept]);
-
     const activosFiltrados = useMemo(() => activos.filter(a => {
         const matchUbic = !filtroUbic || a.ubicacion_actual?.nombre_ubicacion === filtroUbic;
         const q = searchText.toLowerCase();
@@ -405,10 +417,9 @@ function TabUbicaciones({ activos, ubicaciones, departamentos, cola, setCola }: 
             a.marca.toLowerCase().includes(q) ||
             a.modelo.toLowerCase().includes(q) ||
             (a.numero_serie?.toLowerCase().includes(q) ?? false);
+
         return matchUbic && matchSearch;
     }), [activos, filtroUbic, searchText]);
-
-    useEffect(() => { setPage(1); }, [filtroDept, filtroUbic, searchText]);
 
     const totalPages    = Math.max(1, Math.ceil(activosFiltrados.length / PER_PAGE));
     const pageSafe      = Math.min(page, totalPages);
@@ -423,6 +434,7 @@ function TabUbicaciones({ activos, ubicaciones, departamentos, cola, setCola }: 
         setSelected(prev => {
             const next = new Set(prev);
             activosPagina.forEach(a => checked ? next.add(a.id) : next.delete(a.id));
+
             return next;
         });
     }
@@ -430,7 +442,13 @@ function TabUbicaciones({ activos, ubicaciones, departamentos, cola, setCola }: 
     function toggleActivo(id: number) {
         setSelected(prev => {
             const next = new Set(prev);
-            next.has(id) ? next.delete(id) : next.add(id);
+
+            if (next.has(id)) {
+ next.delete(id); 
+} else {
+ next.add(id); 
+}
+
             return next;
         });
     }
@@ -454,7 +472,9 @@ function TabUbicaciones({ activos, ubicaciones, departamentos, cola, setCola }: 
             <div className="p-4 bg-white border-b space-y-3">
                 <select
                     value={filtroDept}
-                    onChange={e => setFiltroDept(e.target.value)}
+                    onChange={e => {
+ setFiltroDept(e.target.value); setFiltroUbic(''); setPage(1); 
+}}
                     className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-700 bg-white"
                     style={{ color: '#374151' }}
                 >
@@ -465,7 +485,9 @@ function TabUbicaciones({ activos, ubicaciones, departamentos, cola, setCola }: 
                 </select>
                 <select
                     value={filtroUbic}
-                    onChange={e => setFiltroUbic(e.target.value)}
+                    onChange={e => {
+ setFiltroUbic(e.target.value); setPage(1); 
+}}
                     className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-700 bg-white"
                     style={{ color: '#374151' }}
                 >
@@ -479,7 +501,9 @@ function TabUbicaciones({ activos, ubicaciones, departamentos, cola, setCola }: 
                     <input
                         type="text"
                         value={searchText}
-                        onChange={e => setSearchText(e.target.value)}
+                        onChange={e => {
+ setSearchText(e.target.value); setPage(1); 
+}}
                         placeholder="Buscar activo en esta ubicación..."
                         className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-700 bg-white"
                     />
@@ -643,20 +667,31 @@ function TabManual({ activos, cola, setCola }: TabManualProps) {
     const [errorManual, setErrorManual] = useState('');
 
     function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
-        if (e.key !== 'Enter') return;
+        if (e.key !== 'Enter') {
+return;
+}
+
         e.preventDefault();
         const code = manualInput.trim().toUpperCase();
-        if (!code) return;
+
+        if (!code) {
+return;
+}
 
         if (manualCodes.includes(code)) {
             setErrorManual(`El código ${code} ya está en la lista.`);
+
             return;
         }
+
         const found = activos.find(a => a.codigo_inventario.toUpperCase() === code);
+
         if (!found) {
             setErrorManual(`No se encontró ningún activo con código "${code}".`);
+
             return;
         }
+
         setManualCodes(prev => [...prev, code]);
         setManualInput('');
         setErrorManual('');
@@ -706,7 +741,9 @@ function TabManual({ activos, cola, setCola }: TabManualProps) {
                     <input
                         type="text"
                         value={manualInput}
-                        onChange={e => { setManualInput(e.target.value); setErrorManual(''); }}
+                        onChange={e => {
+ setManualInput(e.target.value); setErrorManual(''); 
+}}
                         onKeyDown={handleKeyDown}
                         placeholder="Código de inventario — presioná Enter para agregar"
                         className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-700 bg-white"
@@ -784,6 +821,7 @@ function TabQrUbicaciones({ ubicaciones, departamentos, cola, setCola }: TabQrUb
         const matchSearch = !q ||
             u.nombre_ubicacion.toLowerCase().includes(q) ||
             u.codigo_qr.toLowerCase().includes(q);
+
         return matchDept && matchSearch;
     }), [ubicaciones, filtroDept, searchText]);
 
@@ -792,7 +830,13 @@ function TabQrUbicaciones({ ubicaciones, departamentos, cola, setCola }: TabQrUb
     function toggleUbicacion(id: number) {
         setSelected(prev => {
             const next = new Set(prev);
-            next.has(id) ? next.delete(id) : next.add(id);
+
+            if (next.has(id)) {
+ next.delete(id); 
+} else {
+ next.add(id); 
+}
+
             return next;
         });
     }
@@ -801,6 +845,7 @@ function TabQrUbicaciones({ ubicaciones, departamentos, cola, setCola }: TabQrUb
         setSelected(prev => {
             const next = new Set(prev);
             filtradas.forEach(u => checked ? next.add(u.id) : next.delete(u.id));
+
             return next;
         });
     }
@@ -975,6 +1020,7 @@ export default function TecnicoImprimir({ activos, ubicaciones, departamentos, m
             <div className="fixed inset-x-0 top-14 z-40 flex bg-blue-700">
                 {TABS.map((tab) => {
                     const active = activeTab === tab.id;
+
                     return (
                         <button
                             key={tab.id}

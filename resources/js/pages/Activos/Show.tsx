@@ -18,7 +18,6 @@ import {
 import { useEffect, useRef, useState } from 'react';
 import { logout } from '@/routes';
 import { index as activosIndex, edit as activosEdit, movilizar as activosMovilizar } from '@/routes/activos';
-import { show as activosShow } from '@/routes/activos';
 import { index as historialIndex } from '@/routes/historial';
 import { home as tecnicoHome, imprimir as tecnicoImprimir } from '@/routes/tecnico';
 
@@ -139,10 +138,14 @@ export default function Show({ activo, foto_url, auth }: Props) {
     const [toastMessage, setToastMessage] = useState<string | null>(initialToast);
 
     useEffect(() => {
-        if (!initialToast) return;
+        if (!initialToast) {
+return;
+}
+
         const timer = window.setTimeout(() => setToastMessage(null), 5000);
+
         return () => window.clearTimeout(timer);
-    }, []);
+    }, [initialToast]);
 
     const puedeEditar = auth.user.roles?.some(r =>
         r === 'Técnico' || r === 'Administrador'
