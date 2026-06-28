@@ -187,7 +187,7 @@ class ActivoController extends Controller
 
         $etiquetas = $activos->map(fn (Activo $activo): array => [
             'activo'    => $activo->only(['id', 'codigo_inventario', 'numero_serie', 'marca', 'modelo']),
-            'ubicacion' => $activo->ubicacionActual->nombre_ubicacion,
+            'ubicacion' => optional($activo->ubicacionActual)->nombre_ubicacion,
             'qr_svg'    => QrService::generarSvg($activo->codigo_inventario),
         ]);
 
@@ -207,8 +207,8 @@ class ActivoController extends Controller
             'numero_serie'      => $activo->numero_serie,
             'marca'             => $activo->marca,
             'modelo'            => $activo->modelo,
-            'ubicacion'         => $activo->ubicacionActual->nombre_ubicacion,
-            'departamento'      => $activo->ubicacionActual->departamento->nombre_departamento,
+            'ubicacion'         => optional($activo->ubicacionActual)->nombre_ubicacion,
+            'departamento'      => optional(optional($activo->ubicacionActual)->departamento)->nombre_departamento,
             // PNG base64 para dompdf (soporte SVG limitado en el motor de renderizado).
             'qr_png'            => QrService::generarPngBase64($activo->codigo_inventario),
         ]);
