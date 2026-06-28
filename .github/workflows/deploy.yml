@@ -11,9 +11,6 @@ env:
   IMAGE_NAME: ${{ github.repository }}
 
 jobs:
-  # ============================================================
-  # Job 1: Tests (Pest)
-  # ============================================================
   tests:
     name: Tests PHP
     runs-on: ubuntu-latest
@@ -45,13 +42,10 @@ jobs:
       - name: Instalar dependencias PHP
         run: composer install --no-interaction --prefer-dist
 
-      - name: Copiar .env de prueba
+      - name: Configurar .env para tests
         run: |
           cp .env.example .env
           php artisan key:generate
-
-      - name: Configurar .env para tests
-        run: |
           sed -i 's/DB_CONNECTION=.*/DB_CONNECTION=pgsql/' .env
           sed -i 's/DB_HOST=.*/DB_HOST=127.0.0.1/' .env
           sed -i 's/DB_PORT=.*/DB_PORT=5432/' .env
@@ -65,9 +59,6 @@ jobs:
       - name: Ejecutar tests Pest
         run: php artisan test --compact
 
-  # ============================================================
-  # Job 2: Build imagen Docker + Scan Trivy
-  # ============================================================
   build-and-scan:
     name: Build + Scan Trivy
     runs-on: ubuntu-latest
@@ -136,9 +127,6 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
 
-  # ============================================================
-  # Job 3: Deploy a EC2 via SSH
-  # ============================================================
   deploy:
     name: Deploy a AWS EC2
     runs-on: ubuntu-latest
@@ -209,3 +197,5 @@ jobs:
               -e AZURE_STORAGE_KEY="${{ secrets.AZURE_STORAGE_KEY }}" \
               -e AZURE_STORAGE_CONTAINER=activos \
               ghcr.io/${{ github.repository }}:latest
+            sleep 15
+            docker exec sca-it php artisan migrate --force
