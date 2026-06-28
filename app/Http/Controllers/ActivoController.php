@@ -21,9 +21,12 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class ActivoController extends Controller
 {
+    use AuthorizesRequests;
+
     public function index(): Response
     {
         $this->authorize('viewAny', Activo::class);
