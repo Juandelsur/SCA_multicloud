@@ -8,7 +8,6 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
 
 jobs:
   tests:
@@ -72,6 +71,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Normalizar nombre de imagen a minúsculas
+        run: echo "IMAGE_NAME=$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -133,6 +135,9 @@ jobs:
     if: github.ref == 'refs/heads/main'
 
     steps:
+      - name: Normalizar nombre de imagen a minúsculas
+        run: echo "IMAGE_NAME=$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+
       - name: Deploy a EC2-A (us-east-1a)
         uses: appleboy/ssh-action@v1
         with:
@@ -140,7 +145,7 @@ jobs:
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            docker pull ghcr.io/${{ github.repository }}:latest
+            docker pull ghcr.io/${{ env.IMAGE_NAME }}:latest
             docker stop sca-it || true
             docker rm sca-it || true
             docker run -d \
@@ -162,7 +167,7 @@ jobs:
               -e AZURE_STORAGE_NAME="${{ secrets.AZURE_STORAGE_NAME }}" \
               -e AZURE_STORAGE_KEY="${{ secrets.AZURE_STORAGE_KEY }}" \
               -e AZURE_STORAGE_CONTAINER=activos \
-              ghcr.io/${{ github.repository }}:latest
+              ghcr.io/${{ env.IMAGE_NAME }}:latest
             sleep 15
             docker exec sca-it php artisan migrate --force
 
@@ -173,7 +178,7 @@ jobs:
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            docker pull ghcr.io/${{ github.repository }}:latest
+            docker pull ghcr.io/${{ env.IMAGE_NAME }}:latest
             docker stop sca-it || true
             docker rm sca-it || true
             docker run -d \
@@ -195,6 +200,6 @@ jobs:
               -e AZURE_STORAGE_NAME="${{ secrets.AZURE_STORAGE_NAME }}" \
               -e AZURE_STORAGE_KEY="${{ secrets.AZURE_STORAGE_KEY }}" \
               -e AZURE_STORAGE_CONTAINER=activos \
-              ghcr.io/${{ github.repository }}:latest
+              ghcr.io/${{ env.IMAGE_NAME }}:latest
             sleep 15
             docker exec sca-it php artisan migrate --force
