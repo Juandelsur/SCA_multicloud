@@ -44,14 +44,29 @@ jobs:
 
       - name: Configurar .env para tests
         run: |
-          cp .env.example .env
+          - name: Configurar .env para tests
+        run: |
+          cat > .env << 'ENVEOF'
+          APP_NAME=SCA-IT
+          APP_ENV=testing
+          APP_KEY=
+          APP_DEBUG=true
+          APP_URL=http://localhost
+          DB_CONNECTION=pgsql
+          DB_HOST=127.0.0.1
+          DB_PORT=5432
+          DB_DATABASE=sca_it_test
+          DB_USERNAME=sca_user
+          DB_PASSWORD=sca_secret
+          SESSION_DRIVER=array
+          CACHE_STORE=array
+          QUEUE_CONNECTION=sync
+          FILESYSTEM_DISK=local
+          AZURE_STORAGE_NAME=fake
+          AZURE_STORAGE_KEY=fake
+          AZURE_STORAGE_CONTAINER=fake
+          ENVEOF
           php artisan key:generate
-          sed -i 's/DB_CONNECTION=.*/DB_CONNECTION=pgsql/' .env
-          sed -i 's/DB_HOST=.*/DB_HOST=127.0.0.1/' .env
-          sed -i 's/DB_PORT=.*/DB_PORT=5432/' .env
-          sed -i 's/DB_DATABASE=.*/DB_DATABASE=sca_it_test/' .env
-          sed -i 's/DB_USERNAME=.*/DB_USERNAME=sca_user/' .env
-          sed -i 's/DB_PASSWORD=.*/DB_PASSWORD=sca_secret/' .env
 
       - name: Ejecutar migraciones
         run: php artisan migrate --force
