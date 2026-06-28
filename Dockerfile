@@ -21,6 +21,7 @@ RUN apk add --no-cache \
     nginx \
     supervisor \
     postgresql-client \
+    libpq-dev \
     libpng-dev \
     libjpeg-turbo-dev \
     libwebp-dev \
