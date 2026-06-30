@@ -26,14 +26,14 @@ class ActivoFactory extends Factory
     {
         return [
             // codigo_inventario se autogenera en el evento creating del modelo
-            'numero_serie' => strtoupper($this->faker->bothify('??###??###')),
-            'marca' => $this->faker->randomElement(self::$marcas),
-            'modelo' => $this->faker->randomElement(self::$modelos),
+            'numero_serie' => strtoupper(fake()->bothify('??###??###')),
+            'marca' => fake()->randomElement(self::$marcas),
+            'modelo' => fake()->randomElement(self::$modelos),
             'foto_path' => null,
             'tipo_id' => TipoEquipo::inRandomOrder()->value('id'),
             'estado_id' => EstadoActivo::inRandomOrder()->value('id'),
             'ubicacion_actual_id' => Ubicacion::inRandomOrder()->value('id'),
-            'notas' => $this->faker->optional(0.3)->sentence(),
+            'notas' => fake()->optional(0.3)->sentence(),
         ];
     }
 }
