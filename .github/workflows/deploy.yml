@@ -171,6 +171,8 @@ jobs:
               ghcr.io/${{ env.IMAGE_NAME }}:latest
             sleep 15
             docker exec sca-it php artisan migrate --force
+            docker exec sca-it php artisan db:seed --force
+            docker exec sca-it php artisan optimize:clear
 
       - name: Deploy a EC2-B (us-east-1b)
         uses: appleboy/ssh-action@v1
@@ -204,3 +206,5 @@ jobs:
               ghcr.io/${{ env.IMAGE_NAME }}:latest
             sleep 15
             docker exec sca-it php artisan migrate --force
+            docker exec sca-it php artisan db:seed --force
+            docker exec sca-it php artisan optimize:clear
