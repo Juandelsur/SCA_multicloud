@@ -6,6 +6,7 @@ import {
     CheckCircle,
     ChevronLeft,
     X,
+    ExternalLink,
     Hash,
     History,
     Home,
@@ -211,6 +212,17 @@ return;
                     <p className="mt-1 text-sm text-blue-100">
                         {activo.tipo?.nombre_tipo ?? '—'}
                     </p>
+                    {foto_url && (
+                        <a
+                            href={foto_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-blue-100 underline underline-offset-2 hover:text-white"
+                        >
+                            <ExternalLink size={12} />
+                            Ver imagen
+                        </a>
+                    )}
                 </div>
 
                 {/* ── Card de datos ────────────────────────────────────── */}
