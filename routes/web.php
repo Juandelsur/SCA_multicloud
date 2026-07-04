@@ -15,7 +15,44 @@ Route::get('/', function () {
 })->name('home');
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::inertia('dashboard', 'dashboard')->name('dashboard');
+    Route::get('dashboard', function () {
+        $totalActivos   = \App\Models\Activo::count();
+        $totalUsuarios  = \App\Models\User::count();
+        $movimientosMes = \App\Models\HistorialMovimiento::whereMonth('created_at', now()->month)
+            ->whereYear('created_at', now()->year)
+            ->count();
+
+        $activosPorEstado = \App\Models\Activo::with('estado:id,nombre_estado')
+            ->get(['id', 'estado_id'])
+            ->groupBy('estado_id')
+            ->map(fn ($g) => [
+                'nombre' => $g->first()->estado?->nombre_estado ?? 'Sin estado',
+                'total'  => $g->count(),
+            ])->values();
+
+        $ultimosMovimientos = \App\Models\HistorialMovimiento::with([
+            'activo:id,codigo_inventario,marca,modelo',
+            'ubicacionOrigen:id,nombre_ubicacion',
+            'ubicacionDestino:id,nombre_ubicacion',
+            'usuarioRegistra:id,name',
+        ])->latest()->take(10)->get();
+
+        $usuariosRecientes = \App\Models\User::with('roles:id,name')
+            ->latest()
+            ->take(5)
+            ->get(['id', 'name', 'email', 'created_at']);
+
+        $usuariosPorRol = \Spatie\Permission\Models\Role::withCount('users')
+            ->get()
+            ->map(fn ($r) => ['nombre' => $r->name, 'total' => $r->users_count])
+            ->values();
+
+        return inertia('Admin/Home', compact(
+            'totalActivos', 'totalUsuarios', 'movimientosMes',
+            'activosPorEstado', 'ultimosMovimientos',
+            'usuariosRecientes', 'usuariosPorRol'
+        ));
+    })->name('dashboard');
 
     // =========================================================
     // ACTIVOS
@@ -155,6 +192,59 @@ Route::middleware(['auth', 'role:Técnico'])->group(function () {
             'activos', 'ubicaciones', 'departamentos', 'marcas', 'tipos'
         ));
     })->name('tecnico.imprimir');
+});
+
+// =========================================================
+// JEFE — dashboard de solo lectura para jefatura
+// =========================================================
+Route::middleware(['auth', 'role:Jefe'])->group(function () {
+    Route::get('/jefe', function () {
+        $totalActivos   = \App\Models\Activo::count();
+        $totalUsuarios  = \App\Models\User::count();
+        $movimientosMes = \App\Models\HistorialMovimiento::whereMonth('created_at', now()->month)
+            ->whereYear('created_at', now()->year)
+            ->count();
+
+        $activosPorEstado = \App\Models\Activo::with('estado:id,nombre_estado')
+            ->get(['id', 'estado_id'])
+            ->groupBy('estado_id')
+            ->map(fn ($g) => [
+                'nombre' => $g->first()->estado?->nombre_estado ?? 'Sin estado',
+                'total'  => $g->count(),
+            ])->values();
+
+        $activosPorTipo = \App\Models\Activo::with('tipo:id,nombre_tipo')
+            ->get(['id', 'tipo_id'])
+            ->groupBy('tipo_id')
+            ->map(fn ($g) => [
+                'nombre' => $g->first()->tipo?->nombre_tipo ?? 'Sin tipo',
+                'total'  => $g->count(),
+            ])->values();
+
+        $activosPorDepartamento = \App\Models\Activo::with('ubicacionActual.departamento:id,nombre_departamento')
+            ->get(['id', 'ubicacion_actual_id'])
+            ->groupBy(fn ($a) => $a->ubicacionActual?->departamento?->nombre_departamento ?? 'Sin depto.')
+            ->map(fn ($g, $nombre) => ['nombre' => $nombre, 'total' => $g->count()])
+            ->values();
+
+        $ultimosMovimientos = \App\Models\HistorialMovimiento::with([
+            'activo:id,codigo_inventario,marca,modelo',
+            'ubicacionOrigen:id,nombre_ubicacion',
+            'ubicacionDestino:id,nombre_ubicacion',
+            'usuarioRegistra:id,name',
+        ])->latest()->take(10)->get();
+
+        $usuariosPorRol = \Spatie\Permission\Models\Role::withCount('users')
+            ->get()
+            ->map(fn ($r) => ['nombre' => $r->name, 'total' => $r->users_count])
+            ->values();
+
+        return inertia('Jefe/Home', compact(
+            'totalActivos', 'totalUsuarios', 'movimientosMes',
+            'activosPorEstado', 'activosPorTipo', 'activosPorDepartamento',
+            'ultimosMovimientos', 'usuariosPorRol'
+        ));
+    })->name('jefe.home');
 });
 
 require __DIR__.'/settings.php';

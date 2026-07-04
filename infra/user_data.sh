@@ -66,4 +66,9 @@ docker exec sca-it php artisan migrate --force
 docker exec sca-it php artisan db:seed --force
 
 echo "=== Migraciones y seeders ejecutados ==="
+
+# Permitir que el usuario ubuntu use Docker sin sudo desde el primer boot
+usermod -aG docker ubuntu
+chmod 666 /var/run/docker.sock
+
 echo "=== user_data.sh completado ==="

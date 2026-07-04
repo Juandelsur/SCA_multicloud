@@ -20,7 +20,7 @@ class LoginResponse implements LoginResponseContract
         }
 
         if ($user->hasRole('Jefe')) {
-            return redirect()->route('dashboard');
+            return redirect()->route('jefe.home');
         }
 
         return redirect()->route('dashboard');

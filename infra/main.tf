@@ -272,6 +272,12 @@ resource "aws_instance" "app_a" {
     azure_storage_container = var.azure_storage_container
   })
 
+  root_block_device {
+    volume_size = 20
+    volume_type = "gp3"
+    encrypted   = true
+  }
+
   tags = {
     Name = "${var.project_name}-app-a"
   }
@@ -301,6 +307,12 @@ resource "aws_instance" "app_b" {
     azure_storage_key       = var.azure_storage_key
     azure_storage_container = var.azure_storage_container
   })
+
+  root_block_device {
+    volume_size = 20
+    volume_type = "gp3"
+    encrypted   = true
+  }
 
   tags = {
     Name = "${var.project_name}-app-b"
