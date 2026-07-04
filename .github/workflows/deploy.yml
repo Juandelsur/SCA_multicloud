@@ -149,6 +149,7 @@ jobs:
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
+            set -e
             echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
             docker pull ghcr.io/${{ env.IMAGE_NAME }}:latest
             docker stop sca-it || true
@@ -177,6 +178,7 @@ jobs:
             docker exec sca-it php artisan migrate --force
             docker exec sca-it php artisan db:seed --force
             docker exec sca-it php artisan optimize:clear
+            docker image prune -af
 
       - name: Deploy a EC2-B (us-east-1b)
         uses: appleboy/ssh-action@v1
@@ -185,6 +187,7 @@ jobs:
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
+            set -e
             echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
             docker pull ghcr.io/${{ env.IMAGE_NAME }}:latest
             docker stop sca-it || true
@@ -213,3 +216,4 @@ jobs:
             docker exec sca-it php artisan migrate --force
             docker exec sca-it php artisan db:seed --force
             docker exec sca-it php artisan optimize:clear
+            docker image prune -af
