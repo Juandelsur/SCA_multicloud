@@ -15,7 +15,7 @@ Route::get('/', function () {
 })->name('home');
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('dashboard', function () {
+    Route::middleware('role:Administrador')->get('dashboard', function () {
         $totalActivos   = \App\Models\Activo::count();
         $totalUsuarios  = \App\Models\User::count();
         $movimientosMes = \App\Models\HistorialMovimiento::whereMonth('created_at', now()->month)
