@@ -26,4 +26,10 @@ export default defineConfig(({ mode }) => ({
         tailwindcss(),
         ...(mode !== 'production' ? [wayfinder({ formVariants: true })] : []),
     ],
+    server: {
+        host: 'sca-it.test',
+        hmr: {
+            host: 'sca-it.test',
+        },
+    },
 }));
