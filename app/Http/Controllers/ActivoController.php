@@ -14,6 +14,7 @@ use App\Models\TipoEquipo;
 use App\Models\Ubicacion;
 use App\Services\QrService;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Response as HttpResponse;
@@ -51,13 +52,40 @@ class ActivoController extends Controller
 
     public function store(StoreActivoRequest $request): RedirectResponse
     {
-        $activo = Activo::create($request->safe()->except(['foto']));
+        $fotoPath = null;
 
+        // La foto se sube ANTES de crear el registro: el nombre del archivo
+        // no depende de codigo_inventario (se autogenera recién en el evento
+        // `creating` del modelo), así que store() en el disco genera su propio
+        // nombre único. Sin prefijo de carpeta: el contenedor de Azure configurado
+        // en AZURE_STORAGE_CONTAINER ya es "activos", así que un prefijo adicional
+        // duplicaría la ruta (activos/activos/...).
         if ($request->hasFile('foto')) {
-            $ext  = $request->file('foto')->getClientOriginalExtension();
-            $path = "{$activo->codigo_inventario}.{$ext}";
-            Storage::disk('azure')->put($path, $request->file('foto'));
-            $activo->update(['foto_path' => $path]);
+            try {
+                $fotoPath = $request->file('foto')->store('', 'azure');
+            } catch (\Throwable $e) {
+                return back()
+                    ->withErrors(['foto' => 'No se pudo subir la fotografía. Intenta nuevamente.'])
+                    ->withInput();
+            }
+        }
+
+        try {
+            $activo = Activo::create([
+                ...$request->safe()->except(['foto']),
+                'foto_path' => $fotoPath,
+            ]);
+        } catch (QueryException $e) {
+            // Si la foto sí se subió pero el registro no se pudo crear, no dejar el blob huérfano.
+            if ($fotoPath) {
+                try {
+                    Storage::disk('azure')->delete($fotoPath);
+                } catch (\Throwable $ignored) {
+                    // no-op
+                }
+            }
+
+            return back()->with('error', 'No se pudo crear el activo. Verifica los datos e intenta nuevamente.')->withInput();
         }
 
         AuditoriaLog::registrar(auth()->user(), 'CREATE', [
@@ -66,8 +94,9 @@ class ActivoController extends Controller
             'codigo' => $activo->codigo_inventario,
         ]);
 
-        return redirect()->route('activos.show', $activo)
-            ->with('success', 'Activo registrado correctamente.');
+        // back() en vez de redirect a activos.show: mantiene al usuario en la
+        // página desde la que creó el activo (p.ej. /gestion/activos con sus filtros).
+        return back()->with('success', 'Activo creado correctamente.');
     }
 
     public function show(Activo $activo): Response
@@ -105,27 +134,53 @@ class ActivoController extends Controller
 
     public function update(UpdateActivoRequest $request, Activo $activo): RedirectResponse
     {
-        $data = $request->safe()->except(['foto']);
+        // codigo_inventario no está en las reglas de UpdateActivoRequest, así que
+        // $request->safe() ya lo excluye aunque el cliente lo mande: nunca se pisa.
+        $data = $request->safe()->except(['foto', 'eliminar_foto']);
 
         if ($request->hasFile('foto')) {
+            // Caso A: viene un archivo nuevo -> reemplaza (borra el blob anterior si existía).
             if ($activo->foto_path) {
-                Storage::disk('azure')->delete($activo->foto_path);
+                try {
+                    Storage::disk('azure')->delete($activo->foto_path);
+                } catch (\Throwable $e) {
+                    // no bloquea el reemplazo si el blob viejo ya no existe
+                }
             }
-            $ext        = $request->file('foto')->getClientOriginalExtension();
-            $path       = "{$activo->codigo_inventario}.{$ext}";
-            Storage::disk('azure')->put($path, $request->file('foto'));
-            $data['foto_path'] = $path;
-        }
 
-        $activo->update($data);
+            try {
+                $data['foto_path'] = $request->file('foto')->store('', 'azure');
+            } catch (\Throwable $e) {
+                return back()
+                    ->withErrors(['foto' => 'No se pudo subir la fotografía. Intenta nuevamente.'])
+                    ->withInput();
+            }
+        } elseif ($request->boolean('eliminar_foto')) {
+            // Caso B: se pidió eliminar la foto actual, sin reemplazo.
+            if ($activo->foto_path) {
+                try {
+                    Storage::disk('azure')->delete($activo->foto_path);
+                } catch (\Throwable $e) {
+                    // no bloquea si el blob ya no existe
+                }
+            }
+
+            $data['foto_path'] = null;
+        }
+        // Caso C (ninguno de los anteriores): $data no toca 'foto_path' — permanece intacto.
+
+        try {
+            $activo->update($data);
+        } catch (QueryException $e) {
+            return back()->with('error', 'No se pudo actualizar el activo. Verifica los datos e intenta nuevamente.')->withInput();
+        }
 
         AuditoriaLog::registrar(auth()->user(), 'UPDATE', [
             'modelo' => 'Activo',
             'id'     => $activo->id,
         ]);
 
-        return redirect()->route('activos.show', $activo)
-            ->with('success', 'Activo actualizado correctamente.');
+        return back()->with('success', 'Activo actualizado correctamente.');
     }
 
     public function destroy(Activo $activo): RedirectResponse
@@ -133,7 +188,17 @@ class ActivoController extends Controller
         $this->authorize('delete', $activo);
 
         if ($activo->foto_path) {
-            Storage::disk('azure')->delete($activo->foto_path);
+            try {
+                Storage::disk('azure')->delete($activo->foto_path);
+            } catch (\Throwable $e) {
+                // No bloquea el borrado del registro si el blob ya no existe o falla la conexión.
+            }
+        }
+
+        try {
+            $activo->delete();
+        } catch (QueryException $e) {
+            return back()->with('error', 'No se puede eliminar este activo: tiene movimientos u otros registros asociados en su historial.');
         }
 
         AuditoriaLog::registrar(auth()->user(), 'DELETE', [
@@ -142,10 +207,9 @@ class ActivoController extends Controller
             'codigo' => $activo->codigo_inventario,
         ]);
 
-        $activo->delete();
-
-        return redirect()->route('activos.index')
-            ->with('success', 'Activo eliminado correctamente.');
+        // back() en vez de redirect a activos.index: mantiene al usuario en la
+        // página desde la que eliminó (p.ej. /gestion/activos con sus filtros).
+        return back()->with('success', 'Activo eliminado correctamente.');
     }
 
     /** Moviliza un activo: actualiza ubicación, registra historial y auditoría en una transacción. */

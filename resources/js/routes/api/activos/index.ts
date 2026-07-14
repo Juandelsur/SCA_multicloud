@@ -1,6 +1,6 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../../wayfinder'
 /**
-* @see routes/web.php:104
+* @see routes/web.php:127
 * @route '/api/activos/buscar'
 */
 export const buscar = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -14,7 +14,7 @@ buscar.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:104
+* @see routes/web.php:127
 * @route '/api/activos/buscar'
 */
 buscar.url = (options?: RouteQueryOptions) => {
@@ -22,7 +22,7 @@ buscar.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:104
+* @see routes/web.php:127
 * @route '/api/activos/buscar'
 */
 buscar.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -31,7 +31,7 @@ buscar.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:104
+* @see routes/web.php:127
 * @route '/api/activos/buscar'
 */
 buscar.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -40,7 +40,7 @@ buscar.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:104
+* @see routes/web.php:127
 * @route '/api/activos/buscar'
 */
 const buscarForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -49,7 +49,7 @@ const buscarForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => 
 })
 
 /**
-* @see routes/web.php:104
+* @see routes/web.php:127
 * @route '/api/activos/buscar'
 */
 buscarForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -58,7 +58,7 @@ buscarForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:104
+* @see routes/web.php:127
 * @route '/api/activos/buscar'
 */
 buscarForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({

@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../../wayfinder'
 /**
 * @see \App\Http\Controllers\ActivoController::pdf
-* @see app/Http/Controllers/ActivoController.php:204
+* @see app/Http/Controllers/ActivoController.php:268
 * @route '/activos/etiquetas/pdf'
 */
 export const pdf = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -16,7 +16,7 @@ pdf.definition = {
 
 /**
 * @see \App\Http\Controllers\ActivoController::pdf
-* @see app/Http/Controllers/ActivoController.php:204
+* @see app/Http/Controllers/ActivoController.php:268
 * @route '/activos/etiquetas/pdf'
 */
 pdf.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ pdf.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\ActivoController::pdf
-* @see app/Http/Controllers/ActivoController.php:204
+* @see app/Http/Controllers/ActivoController.php:268
 * @route '/activos/etiquetas/pdf'
 */
 pdf.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -35,7 +35,7 @@ pdf.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\ActivoController::pdf
-* @see app/Http/Controllers/ActivoController.php:204
+* @see app/Http/Controllers/ActivoController.php:268
 * @route '/activos/etiquetas/pdf'
 */
 const pdfForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -45,7 +45,7 @@ const pdfForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\ActivoController::pdf
-* @see app/Http/Controllers/ActivoController.php:204
+* @see app/Http/Controllers/ActivoController.php:268
 * @route '/activos/etiquetas/pdf'
 */
 pdfForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({

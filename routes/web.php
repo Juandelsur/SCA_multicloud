@@ -15,44 +15,67 @@ Route::get('/', function () {
 })->name('home');
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::middleware('role:Administrador')->get('dashboard', function () {
-        $totalActivos   = \App\Models\Activo::count();
-        $totalUsuarios  = \App\Models\User::count();
-        $movimientosMes = \App\Models\HistorialMovimiento::whereMonth('created_at', now()->month)
-            ->whereYear('created_at', now()->year)
-            ->count();
+    Route::middleware('role:Administrador')->group(function () {
+        Route::get('dashboard', function (\Illuminate\Http\Request $request) {
+            $totalActivos = \App\Models\Activo::count();
 
-        $activosPorEstado = \App\Models\Activo::with('estado:id,nombre_estado')
-            ->get(['id', 'estado_id'])
-            ->groupBy('estado_id')
-            ->map(fn ($g) => [
-                'nombre' => $g->first()->estado?->nombre_estado ?? 'Sin estado',
-                'total'  => $g->count(),
-            ])->values();
+            $estadosGlobal = \App\Models\EstadoActivo::withCount('activos')
+                ->get(['id', 'nombre_estado'])
+                ->map(fn ($e) => [
+                    'id'         => $e->id,
+                    'nombre'     => $e->nombre_estado,
+                    'total'      => $e->activos_count,
+                    'porcentaje' => $totalActivos > 0 ? round($e->activos_count / $totalActivos * 100) : 0,
+                ])->values();
 
-        $ultimosMovimientos = \App\Models\HistorialMovimiento::with([
-            'activo:id,codigo_inventario,marca,modelo',
-            'ubicacionOrigen:id,nombre_ubicacion',
-            'ubicacionDestino:id,nombre_ubicacion',
-            'usuarioRegistra:id,name',
-        ])->latest()->take(10)->get();
+            $ubicaciones = \App\Models\Ubicacion::with('departamento:id,nombre_departamento')
+                ->get(['id', 'nombre_ubicacion', 'departamento_id'])
+                ->map(fn ($u) => [
+                    'id'    => $u->id,
+                    'label' => ($u->departamento?->nombre_departamento ?? 'Sin depto.').' - '.$u->nombre_ubicacion,
+                ])
+                ->sortBy('label')
+                ->values();
 
-        $usuariosRecientes = \App\Models\User::with('roles:id,name')
-            ->latest()
-            ->take(5)
-            ->get(['id', 'name', 'email', 'created_at']);
+            $ubicacionId = $request->integer('ubicacion_id') ?: null;
 
-        $usuariosPorRol = \Spatie\Permission\Models\Role::withCount('users')
-            ->get()
-            ->map(fn ($r) => ['nombre' => $r->name, 'total' => $r->users_count])
-            ->values();
+            if ($ubicacionId) {
+                $estadosUbicacion = \App\Models\EstadoActivo::withCount(['activos' => fn ($q) => $q->where('ubicacion_actual_id', $ubicacionId)])
+                    ->get(['id', 'nombre_estado'])
+                    ->map(fn ($e) => ['id' => $e->id, 'nombre' => $e->nombre_estado, 'total' => $e->activos_count])
+                    ->values();
 
-        return inertia('Admin/Home', compact(
-            'totalActivos', 'totalUsuarios', 'movimientosMes',
-            'activosPorEstado', 'ultimosMovimientos',
-            'usuariosRecientes', 'usuariosPorRol'
-        ));
-    })->name('dashboard');
+                $ultimosMovimientos = \App\Models\HistorialMovimiento::with([
+                    'activo:id,codigo_inventario,marca,modelo',
+                    'ubicacionOrigen:id,nombre_ubicacion',
+                    'ubicacionDestino:id,nombre_ubicacion',
+                    'usuarioRegistra:id,name',
+                ])->where('ubicacion_destino_id', $ubicacionId)->latest()->take(15)->get();
+            } else {
+                $estadosUbicacion = $estadosGlobal->map(fn ($e) => [
+                    'id' => $e['id'], 'nombre' => $e['nombre'], 'total' => $e['total'],
+                ])->values();
+
+                $ultimosMovimientos = \App\Models\HistorialMovimiento::with([
+                    'activo:id,codigo_inventario,marca,modelo',
+                    'ubicacionOrigen:id,nombre_ubicacion',
+                    'ubicacionDestino:id,nombre_ubicacion',
+                    'usuarioRegistra:id,name',
+                ])->latest()->take(15)->get();
+            }
+
+            return inertia('Admin/Home', [
+                'totalActivos'       => $totalActivos,
+                'estadosGlobal'      => $estadosGlobal,
+                'ubicaciones'        => $ubicaciones,
+                'ubicacionId'        => $ubicacionId,
+                'estadosUbicacion'   => $estadosUbicacion,
+                'ultimosMovimientos' => $ultimosMovimientos,
+            ]);
+        })->name('dashboard');
+
+        Route::get('dashboard/otros', fn () => inertia('Admin/Otros'))->name('dashboard.otros');
+    });
 
     // =========================================================
     // ACTIVOS
@@ -134,6 +157,155 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::resource('estados-activo', EstadoActivoController::class);
         Route::resource('usuarios', UsuarioController::class);
         Route::post('usuarios/{usuario}/rol', [UsuarioController::class, 'asignarRol'])->name('usuarios.rol');
+
+        // ── Gestión de Entidades — grid de accesos con conteos reales ──
+        Route::get('dashboard/gestion', function () {
+            $entidades = [
+                [
+                    'nombre'      => 'Activos',
+                    'descripcion' => 'Gestión de equipos e inventario',
+                    'count'       => \App\Models\Activo::count(),
+                    'color'       => 'blue',
+                    'icono'       => 'Laptop',
+                    'ruta'        => '/gestion/activos',
+                ],
+                [
+                    'nombre'      => 'Estado Activos',
+                    'descripcion' => 'Estados de los activos',
+                    'count'       => \App\Models\EstadoActivo::count(),
+                    'color'       => 'purple',
+                    'icono'       => 'Share2',
+                    'ruta'        => '/gestion/estados-activo',
+                ],
+                [
+                    'nombre'      => 'Departamentos',
+                    'descripcion' => 'Departamentos de la organización',
+                    'count'       => \App\Models\Departamento::count(),
+                    'color'       => 'teal',
+                    'icono'       => 'Building2',
+                    'ruta'        => '/gestion/departamentos',
+                ],
+                [
+                    'nombre'      => 'Roles',
+                    'descripcion' => 'Roles y permisos de usuarios',
+                    'count'       => \Spatie\Permission\Models\Role::count(),
+                    'color'       => 'orange',
+                    'icono'       => 'ShieldUser',
+                    'ruta'        => '/gestion/roles',
+                ],
+                [
+                    'nombre'      => 'Tipos de Equipo',
+                    'descripcion' => 'Categorías de equipos',
+                    'count'       => \App\Models\TipoEquipo::count(),
+                    'color'       => 'indigo',
+                    'icono'       => 'MonitorSmartphone',
+                    'ruta'        => '/gestion/tipos-equipo',
+                ],
+                [
+                    'nombre'      => 'Ubicaciones',
+                    'descripcion' => 'Ubicaciones físicas',
+                    'count'       => \App\Models\Ubicacion::count(),
+                    'color'       => 'red',
+                    'icono'       => 'MapPin',
+                    'ruta'        => '/gestion/ubicaciones',
+                ],
+                [
+                    'nombre'      => 'Usuarios',
+                    'descripcion' => 'Usuarios del sistema',
+                    'count'       => \App\Models\User::count(),
+                    'color'       => 'green',
+                    'icono'       => 'Users',
+                    'ruta'        => '/gestion/usuarios',
+                ],
+            ];
+
+            return inertia('Admin/Gestion', ['entidades' => $entidades]);
+        })->name('dashboard.gestion');
+
+        // ── Gestión de Activos — listado con búsqueda/filtros bajo demanda ──
+        Route::get('gestion/activos', function (\Illuminate\Http\Request $request) {
+            $marcas = \App\Models\Activo::distinct()->pluck('marca')->filter()->sort()->values();
+
+            $tipos = \App\Models\TipoEquipo::orderBy('nombre_tipo')->get(['id', 'nombre_tipo']);
+
+            $estados = \App\Models\EstadoActivo::orderBy('nombre_estado')->get(['id', 'nombre_estado']);
+
+            $ubicaciones = \App\Models\Ubicacion::with('departamento:id,nombre_departamento')
+                ->get(['id', 'nombre_ubicacion', 'departamento_id'])
+                ->map(fn ($u) => [
+                    'id'    => $u->id,
+                    'label' => ($u->departamento?->nombre_departamento ?? 'Sin depto.').' - '.$u->nombre_ubicacion,
+                ])
+                ->sortBy('label')
+                ->values();
+
+            $tieneFiltros = $request->filled('search')
+                || $request->filled('marca')
+                || $request->filled('tipo_id')
+                || $request->filled('estado_id')
+                || $request->filled('ubicacion_id');
+
+            $activos = null;
+
+            if ($tieneFiltros) {
+                $query = \App\Models\Activo::with([
+                    'tipo:id,nombre_tipo',
+                    'estado:id,nombre_estado',
+                    'ubicacionActual.departamento:id,nombre_departamento',
+                ])->latest();
+
+                if ($search = trim((string) $request->string('search'))) {
+                    $query->where(function ($q) use ($search) {
+                        $q->where('codigo_inventario', 'ilike', "%{$search}%")
+                            ->orWhere('numero_serie', 'ilike', "%{$search}%")
+                            ->orWhere('modelo', 'ilike', "%{$search}%");
+                    });
+                }
+
+                if ($marca = (string) $request->string('marca')) {
+                    $query->where('marca', $marca);
+                }
+
+                if ($tipoId = $request->integer('tipo_id')) {
+                    $query->where('tipo_id', $tipoId);
+                }
+
+                if ($estadoId = $request->integer('estado_id')) {
+                    $query->where('estado_id', $estadoId);
+                }
+
+                if ($ubicacionId = $request->integer('ubicacion_id')) {
+                    $query->where('ubicacion_actual_id', $ubicacionId);
+                }
+
+                $activos = $query->paginate(20)->withQueryString();
+
+                // La URL de Azure se resuelve acá (firmada, 30 min) para que el
+                // modal "Ver" del frontend no dispare una consulta extra por fila.
+                $activos->getCollection()->transform(function ($activo) {
+                    $activo->foto_url = $activo->fotoUrl();
+
+                    return $activo;
+                });
+            }
+
+            return inertia('Gestion/Activos/Index', [
+                'activos'     => $activos,
+                'marcas'      => $marcas,
+                'tipos'       => $tipos,
+                'estados'     => $estados,
+                'ubicaciones' => $ubicaciones,
+                'filtros'     => $request->only(['search', 'marca', 'tipo_id', 'estado_id', 'ubicacion_id']),
+            ]);
+        })->name('gestion.activos');
+
+        // ── Placeholders — CRUD real de cada entidad, iteración por iteración ──
+        Route::get('gestion/estados-activo', fn () => inertia('Gestion/Placeholder', ['entidad' => 'Estado Activos']))->name('gestion.estadosActivo');
+        Route::get('gestion/departamentos', fn () => inertia('Gestion/Placeholder', ['entidad' => 'Departamentos']))->name('gestion.departamentos');
+        Route::get('gestion/roles', fn () => inertia('Gestion/Placeholder', ['entidad' => 'Roles']))->name('gestion.roles');
+        Route::get('gestion/tipos-equipo', fn () => inertia('Gestion/Placeholder', ['entidad' => 'Tipos de Equipo']))->name('gestion.tiposEquipo');
+        Route::get('gestion/ubicaciones', fn () => inertia('Gestion/Placeholder', ['entidad' => 'Ubicaciones']))->name('gestion.ubicaciones');
+        Route::get('gestion/usuarios', fn () => inertia('Gestion/Placeholder', ['entidad' => 'Usuarios']))->name('gestion.usuarios');
     });
 });
 

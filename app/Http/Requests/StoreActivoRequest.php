@@ -15,14 +15,14 @@ class StoreActivoRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'numero_serie'        => ['required', 'string', 'max:255', 'unique:activos,numero_serie'],
+            'numero_serie'        => ['nullable', 'string', 'max:255', 'unique:activos,numero_serie'],
             'marca'               => ['required', 'string', 'max:255'],
             'modelo'              => ['required', 'string', 'max:255'],
             'tipo_id'             => ['required', 'integer', 'exists:tipos_equipo,id'],
             'estado_id'           => ['required', 'integer', 'exists:estados_activo,id'],
             'ubicacion_actual_id' => ['required', 'integer', 'exists:ubicaciones,id'],
             'notas'               => ['nullable', 'string'],
-            'foto'                => ['nullable', 'image', 'max:2048'],
+            'foto'                => ['nullable', 'image', 'max:5120'],
         ];
     }
 }

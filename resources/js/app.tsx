@@ -17,6 +17,7 @@ createInertiaApp({
             case name.startsWith('Activos/'):
             case name.startsWith('Jefe/'):
             case name.startsWith('Admin/'):
+            case name.startsWith('Gestion/'):
                 return null;
             case name.startsWith('auth/'):
                 return AuthLayout;
