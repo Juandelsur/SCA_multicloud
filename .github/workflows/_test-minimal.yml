@@ -17,18 +17,5 @@ on:
 jobs:
   hello:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
-      security-events: write
     steps:
       - run: echo "hello ${{ inputs.service_name }} ${{ inputs.service_folder }} ${{ inputs.needs_db }}"
-
-  deploy:
-    runs-on: ubuntu-latest
-    needs: hello
-    if: github.ref == 'refs/heads/main'
-    permissions:
-      packages: read
-    steps:
-      - run: echo "deploy"
