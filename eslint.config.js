@@ -114,6 +114,12 @@ export default [
             'resources/js/components/ui/*',
             'resources/js/routes/**',
             'resources/js/wayfinder/**',
+            // Microservicios: proyectos Node/CommonJS independientes, cada uno
+            // con su propio package.json — no son parte de la app Laravel/React
+            // que este ESLint (orientado a browser/TS) está pensado para revisar.
+            'servicio-auditoria/**',
+            'servicio-etiquetas/**',
+            'servicio-reportes/**',
         ],
     },
     prettier,

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Database\Factories\ActivoFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -9,9 +10,16 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Storage;
 use RuntimeException;
 
+/**
+ * @property-read TipoEquipo|null $tipo
+ * @property-read Ubicacion|null $ubicacionActual
+ * @property string|null $foto_url Asignado dinámicamente (no es columna ni accessor)
+ *                                 en el listado de Gestión de Activos para adjuntar la URL firmada de Azure sin
+ *                                 golpear el storage por cada "Ver" en el frontend — ver routes/web.php.
+ */
 class Activo extends Model
 {
-    /** @use HasFactory<\Database\Factories\ActivoFactory> */
+    /** @use HasFactory<ActivoFactory> */
     use HasFactory;
 
     protected $table = 'activos';

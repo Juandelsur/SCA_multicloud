@@ -14,7 +14,7 @@ import {
     Users,
 } from 'lucide-react';
 import { dashboard, logout } from '@/routes';
-import { gestion as dashboardGestion, otros as dashboardOtros } from '@/routes/dashboard';
+import { otros as dashboardOtros } from '@/routes/dashboard';
 
 // ─── Tipos ───────────────────────────────────────────────────────────────────
 

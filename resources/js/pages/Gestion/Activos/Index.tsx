@@ -319,7 +319,6 @@ export default function GestionActivosIndex({ activos, marcas, tipos, estados, u
         document.addEventListener('keydown', onKeyDown);
 
         return () => document.removeEventListener('keydown', onKeyDown);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [activoVer, activoEliminar, showCrear, activoEditar]);
 
     function cerrarModalEliminar() {

@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use RuntimeException;
 
+/** @property-read Departamento|null $departamento */
 class Ubicacion extends Model
 {
     protected $table = 'ubicaciones';
