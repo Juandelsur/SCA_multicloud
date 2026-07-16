@@ -1,0 +1,16 @@
+name: Pipeline — servicio-auditoria
+
+on:
+  push:
+    paths:
+      - "servicio-auditoria/**"
+  workflow_dispatch:
+
+jobs:
+  ci:
+    uses: ./.github/workflows/_microservicio-reusable.yml
+    with:
+      service_name: auditoria
+      service_folder: servicio-auditoria
+      needs_db: true
+    secrets: inherit

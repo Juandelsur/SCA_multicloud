@@ -1,0 +1,16 @@
+name: Pipeline — servicio-etiquetas
+
+on:
+  push:
+    paths:
+      - "servicio-etiquetas/**"
+  workflow_dispatch:
+
+jobs:
+  ci:
+    uses: ./.github/workflows/_microservicio-reusable.yml
+    with:
+      service_name: etiquetas
+      service_folder: servicio-etiquetas
+      needs_db: false
+    secrets: inherit

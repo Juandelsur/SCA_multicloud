@@ -1,0 +1,293 @@
+name: Pipeline reutilizable — Microservicio
+
+# No se dispara solo (workflow_call): lo invocan pipeline-etiquetas.yml,
+# pipeline-auditoria.yml y pipeline-reportes.yml, cada uno con sus propios
+# inputs y "secrets: inherit". Mismo patrón de las 4 fases DevSecOps que
+# devsecops.yml ya usa para la App Principal, pero acotado a un solo
+# microservicio (categorías SARIF distintas para no chocar en Security tab).
+on:
+  workflow_call:
+    inputs:
+      service_name:
+        required: true
+        type: string
+      service_folder:
+        required: true
+        type: string
+      needs_db:
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  build-scan-push:
+    name: Build + 4 Fases DevSecOps + Push
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+      security-events: write
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # ─────────────────────────────────────────────────────────────
+      # FASE 1 — SAST: Semgrep
+      # ─────────────────────────────────────────────────────────────
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Instalar Semgrep
+        run: pip install semgrep
+
+      - name: "FASE 1/4 — SAST: Semgrep"
+        id: semgrep
+        continue-on-error: true
+        run: |
+          semgrep scan \
+            --config p/security-audit \
+            --config p/javascript \
+            --sarif --output semgrep-results.sarif \
+            --metrics off \
+            "${{ inputs.service_folder }}"
+          COUNT=$(jq '[.runs[].results[]] | length' semgrep-results.sarif 2>/dev/null || echo 0)
+          echo "count=$COUNT" >> "$GITHUB_OUTPUT"
+          echo "Semgrep encontró $COUNT hallazgo(s) en ${{ inputs.service_folder }}."
+
+      - name: Subir SARIF de Semgrep a GitHub Security
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        continue-on-error: true
+        with:
+          sarif_file: "semgrep-results.sarif"
+          category: "semgrep-${{ inputs.service_name }}"
+
+      # ─────────────────────────────────────────────────────────────
+      # FASE 2 — SCA: npm audit
+      # ─────────────────────────────────────────────────────────────
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: "${{ inputs.service_folder }}/package-lock.json"
+
+      - name: "FASE 2/4 — SCA: npm audit"
+        id: npm_audit
+        continue-on-error: true
+        working-directory: ${{ inputs.service_folder }}
+        run: |
+          npm audit --json > npm-audit.json || true
+          COUNT=$(jq '.metadata.vulnerabilities.total // 0' npm-audit.json 2>/dev/null || echo 0)
+          echo "count=$COUNT" >> "$GITHUB_OUTPUT"
+
+          echo "=== Resumen npm audit (${{ inputs.service_folder }}) ==="
+          if [ "$COUNT" -eq 0 ]; then
+            echo "Sin vulnerabilidades conocidas."
+          else
+            echo "$COUNT vulnerabilidad(es) encontrada(s) por severidad:"
+            jq -r '.metadata.vulnerabilities | to_entries[] | "  - \(.key): \(.value)"' npm-audit.json
+          fi
+
+      # ─────────────────────────────────────────────────────────────
+      # FASE 3 — Secret Scanning: Gitleaks, scopeado a la carpeta del
+      # servicio (--no-git --source: escanea el árbol de archivos actual
+      # de esa carpeta, no todo el historial del monorepo — eso ya se
+      # verificó por separado en devsecops.yml / la revisión manual).
+      # ─────────────────────────────────────────────────────────────
+      - name: "FASE 3/4 — Secret Scanning: Gitleaks"
+        id: gitleaks
+        continue-on-error: true
+        run: |
+          docker run --rm -v "$PWD:/repo" zricethezav/gitleaks:latest \
+            detect --no-git --source "/repo/${{ inputs.service_folder }}" \
+            --report-format sarif --report-path "/repo/gitleaks-${{ inputs.service_name }}.sarif" \
+            --exit-code 0
+          COUNT=$(jq '[.runs[].results[]] | length' "gitleaks-${{ inputs.service_name }}.sarif" 2>/dev/null || echo 0)
+          echo "count=$COUNT" >> "$GITHUB_OUTPUT"
+          echo "Gitleaks encontró $COUNT hallazgo(s) en ${{ inputs.service_folder }}."
+
+      # ─────────────────────────────────────────────────────────────
+      # FASE 4 — IaC Scanning: Trivy config sobre el Dockerfile del servicio
+      # ─────────────────────────────────────────────────────────────
+      - name: "FASE 4/4 — IaC Scanning: Trivy config"
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: "config"
+          scan-ref: "${{ inputs.service_folder }}"
+          format: "sarif"
+          output: "trivy-config-${{ inputs.service_name }}.sarif"
+          exit-code: "0"
+
+      - name: Contar hallazgos de Trivy config
+        id: trivy_config
+        if: always()
+        continue-on-error: true
+        run: |
+          COUNT=$(jq '[.runs[].results[]] | length' "trivy-config-${{ inputs.service_name }}.sarif" 2>/dev/null || echo 0)
+          echo "count=$COUNT" >> "$GITHUB_OUTPUT"
+          echo "Trivy config encontró $COUNT hallazgo(s) en ${{ inputs.service_folder }}/Dockerfile."
+
+      - name: Subir SARIF de Trivy config a GitHub Security
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        continue-on-error: true
+        with:
+          sarif_file: "trivy-config-${{ inputs.service_name }}.sarif"
+          category: "trivy-config-${{ inputs.service_name }}"
+
+      # ─────────────────────────────────────────────────────────────
+      # BUILD + PUSH a GHCR
+      # ─────────────────────────────────────────────────────────────
+      - name: Normalizar nombre de imagen a minúsculas
+        run: |
+          REPO_LOWER=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
+          echo "IMAGE_NAME=${REPO_LOWER}-${{ inputs.service_name }}" >> "$GITHUB_ENV"
+
+      - name: Login a GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Metadata de la imagen
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ env.IMAGE_NAME }}
+          tags: |
+            type=sha,prefix=sha-
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build y push imagen Docker
+        uses: docker/build-push-action@v5
+        with:
+          context: ${{ inputs.service_folder }}
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+      # ─────────────────────────────────────────────────────────────
+      # RESUMEN CONSOLIDADO
+      # ─────────────────────────────────────────────────────────────
+      - name: Resumen consolidado de las 4 fases
+        if: always()
+        run: |
+          {
+            echo "# 🛡️ ${{ inputs.service_name }} — Resumen de las 4 fases"
+            echo ""
+            echo "| Fase | Herramienta | Hallazgos | Estado del step |"
+            echo "|------|-------------|-----------|------------------|"
+            echo "| 1. SAST | Semgrep (security-audit, javascript) | ${{ steps.semgrep.outputs.count || 'N/A' }} | ${{ steps.semgrep.outcome }} |"
+            echo "| 2. SCA | npm audit | ${{ steps.npm_audit.outputs.count || 'N/A' }} | ${{ steps.npm_audit.outcome }} |"
+            echo "| 3. Secret Scanning | Gitleaks | ${{ steps.gitleaks.outputs.count || 'N/A' }} | ${{ steps.gitleaks.outcome }} |"
+            echo "| 4. IaC Scanning | Trivy config (Dockerfile) | ${{ steps.trivy_config.outputs.count || 'N/A' }} | ${{ steps.trivy_config.outcome }} |"
+            echo ""
+            echo "Imagen: \`ghcr.io/${{ env.IMAGE_NAME }}:latest\`"
+            echo ""
+            echo "Ninguna fase bloquea el pipeline (\`continue-on-error: true\`)."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  deploy:
+    name: Deploy a AWS EC2
+    runs-on: ubuntu-latest
+    needs: build-scan-push
+    if: github.ref == 'refs/heads/main'
+
+    permissions:
+      packages: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # docker-compose.prod.yml no vive en los hosts EC2 — mismo patrón que
+      # deploy.yml de la App Principal.
+      - name: Copiar docker-compose.prod.yml a EC2-A
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.EC2_A_IP }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}
+          source: "docker-compose.prod.yml"
+          target: "~/"
+
+      - name: Deploy a EC2-A (us-east-1a)
+        uses: appleboy/ssh-action@v1
+        env:
+          NEEDS_DB: ${{ inputs.needs_db }}
+          SERVICE_NAME: ${{ inputs.service_name }}
+          COMPOSE_SERVICE: ${{ inputs.service_folder }}
+          DEPLOY_DB_HOST: ${{ secrets.DB_HOST }}
+          DEPLOY_DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          DEPLOY_REPORTES_DB_PASSWORD: ${{ secrets.REPORTES_DB_PASSWORD }}
+        with:
+          host: ${{ secrets.EC2_A_IP }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}
+          envs: NEEDS_DB,SERVICE_NAME,COMPOSE_SERVICE,DEPLOY_DB_HOST,DEPLOY_DB_PASSWORD,DEPLOY_REPORTES_DB_PASSWORD
+          script: |
+            set -e
+            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+            if [ "$NEEDS_DB" = "true" ]; then
+              export DB_HOST="$DEPLOY_DB_HOST"
+              export DB_PORT=5432
+              export DB_DATABASE=sca_it
+              if [ "$SERVICE_NAME" = "reportes" ]; then
+                export DB_PASSWORD="$DEPLOY_REPORTES_DB_PASSWORD"
+              else
+                export DB_PASSWORD="$DEPLOY_DB_PASSWORD"
+              fi
+            fi
+
+            docker compose -f docker-compose.prod.yml pull "$COMPOSE_SERVICE"
+            docker compose -f docker-compose.prod.yml up -d "$COMPOSE_SERVICE"
+            docker image prune -af
+
+      - name: Copiar docker-compose.prod.yml a EC2-B
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.EC2_B_IP }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}
+          source: "docker-compose.prod.yml"
+          target: "~/"
+
+      - name: Deploy a EC2-B (us-east-1b)
+        uses: appleboy/ssh-action@v1
+        env:
+          NEEDS_DB: ${{ inputs.needs_db }}
+          SERVICE_NAME: ${{ inputs.service_name }}
+          COMPOSE_SERVICE: ${{ inputs.service_folder }}
+          DEPLOY_DB_HOST: ${{ secrets.DB_HOST }}
+          DEPLOY_DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          DEPLOY_REPORTES_DB_PASSWORD: ${{ secrets.REPORTES_DB_PASSWORD }}
+        with:
+          host: ${{ secrets.EC2_B_IP }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}
+          envs: NEEDS_DB,SERVICE_NAME,COMPOSE_SERVICE,DEPLOY_DB_HOST,DEPLOY_DB_PASSWORD,DEPLOY_REPORTES_DB_PASSWORD
+          script: |
+            set -e
+            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+            if [ "$NEEDS_DB" = "true" ]; then
+              export DB_HOST="$DEPLOY_DB_HOST"
+              export DB_PORT=5432
+              export DB_DATABASE=sca_it
+              if [ "$SERVICE_NAME" = "reportes" ]; then
+                export DB_PASSWORD="$DEPLOY_REPORTES_DB_PASSWORD"
+              else
+                export DB_PASSWORD="$DEPLOY_DB_PASSWORD"
+              fi
+            fi
+
+            docker compose -f docker-compose.prod.yml pull "$COMPOSE_SERVICE"
+            docker compose -f docker-compose.prod.yml up -d "$COMPOSE_SERVICE"
+            docker image prune -af

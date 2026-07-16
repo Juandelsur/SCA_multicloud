@@ -1,0 +1,16 @@
+name: Pipeline — servicio-reportes
+
+on:
+  push:
+    paths:
+      - "servicio-reportes/**"
+  workflow_dispatch:
+
+jobs:
+  ci:
+    uses: ./.github/workflows/_microservicio-reusable.yml
+    with:
+      service_name: reportes
+      service_folder: servicio-reportes
+      needs_db: true
+    secrets: inherit
