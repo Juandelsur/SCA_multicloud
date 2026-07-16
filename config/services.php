@@ -39,4 +39,8 @@ return [
         'url' => env('AUDITORIA_SERVICE_URL'),
     ],
 
+    'etiquetas' => [
+        'url' => env('ETIQUETAS_SERVICE_URL'),
+    ],
+
 ];

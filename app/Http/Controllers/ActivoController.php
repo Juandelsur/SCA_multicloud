@@ -14,16 +14,18 @@ use App\Models\TipoEquipo;
 use App\Models\Ubicacion;
 use App\Services\AuditoriaService;
 use App\Services\QrService;
-use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Response as HttpResponse;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 class ActivoController extends Controller
 {
@@ -306,30 +308,40 @@ class ActivoController extends Controller
     }
 
     /**
-     * Genera y descarga el PDF de etiquetas con QR para los activos filtrados.
-     * Cada etiqueta incluye: QR (PNG), código de inventario, marca/modelo, n° serie y ubicación.
+     * Genera el PDF de etiquetas QR delegando en servicio-etiquetas (microservicio
+     * standalone) en vez de dompdf local: demuestra la comunicación real entre
+     * módulos. A diferencia de AuditoriaService, acá el usuario está esperando
+     * activamente el archivo, así que un fallo debe ser visible, no silencioso.
      */
-    public function etiquetasPdf(EtiquetasRequest $request): HttpResponse
+    public function etiquetasPdf(EtiquetasRequest $request): SymfonyResponse
     {
         $activos = $this->resolverSeleccionActivos($request);
+        $codigos = $activos->pluck('codigo_inventario')->values()->all();
 
-        $etiquetas = $activos->map(fn (Activo $activo): array => [
-            'codigo_inventario' => $activo->codigo_inventario,
-            'numero_serie'      => $activo->numero_serie,
-            'marca'             => $activo->marca,
-            'modelo'            => $activo->modelo,
-            'ubicacion'         => optional($activo->ubicacionActual)->nombre_ubicacion,
-            'departamento'      => optional(optional($activo->ubicacionActual)->departamento)->nombre_departamento,
-            // PNG base64 para dompdf (soporte SVG limitado en el motor de renderizado).
-            'qr_png'            => QrService::generarPngBase64($activo->codigo_inventario),
-        ]);
+        if (empty($codigos)) {
+            return response()->json(['error' => 'No hay activos seleccionados para generar etiquetas.'], 422);
+        }
 
-        $pdf = Pdf::loadView('etiquetas.activos', ['etiquetas' => $etiquetas])
-            ->setPaper('a4', 'portrait');
+        $url = config('services.etiquetas.url');
+
+        try {
+            $response = Http::timeout(5)->post("{$url}/generar", ['codigos' => $codigos])->throw();
+        } catch (\Throwable $e) {
+            Log::error('No se pudo generar el PDF vía servicio-etiquetas', [
+                'codigos' => $codigos,
+                'error'   => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'error' => 'No se pudo generar el PDF en este momento.',
+            ], 503);
+        }
 
         $nombreArchivo = 'etiquetas-activos-'.now()->format('Y-m-d').'.pdf';
 
-        return $pdf->download($nombreArchivo);
+        return response($response->body())
+            ->header('Content-Type', 'application/pdf')
+            ->header('Content-Disposition', "attachment; filename=\"{$nombreArchivo}\"");
     }
 
     /** Resuelve qué activos imprimir según los filtros del request con eager loading completo. */

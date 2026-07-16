@@ -1,15 +1,18 @@
 import { Head, Link, router } from '@inertiajs/react';
 import {
+    AlertTriangle,
     AlignJustify,
     CheckSquare,
     ChevronLeft,
     ChevronRight,
     ChevronsLeft,
     ChevronsRight,
+    Download,
     Filter,
     History,
     Home,
     Info,
+    Loader2,
     LogOut,
     MapPin,
     Printer,
@@ -21,6 +24,7 @@ import {
 import { QRCodeSVG } from 'qrcode.react';
 import { useMemo, useState } from 'react';
 import { logout } from '@/routes';
+import { pdf as etiquetasPdfRoute } from '@/routes/activos/etiquetas';
 import { index as historialIndex } from '@/routes/historial';
 import { home as tecnicoHome } from '@/routes/tecnico';
 
@@ -72,6 +76,54 @@ function estadoBadge(nombre: string | undefined): string {
     }
 }
 
+function getCookie(name: string): string | null {
+    const match = document.cookie.match(new RegExp(`(?:^|; )${name}=([^;]*)`));
+
+    return match ? decodeURIComponent(match[1]) : null;
+}
+
+/**
+ * Descarga real por PDF vía servicio-etiquetas (no dompdf local): se usa fetch
+ * en vez de Inertia porque la respuesta es un binario (o un JSON de error), no
+ * una página Inertia. A diferencia del historial de auditoría, acá el usuario
+ * está esperando el archivo, así que un fallo se muestra explícitamente.
+ */
+async function descargarEtiquetasPdf(activoIds: number[]): Promise<{ ok: true } | { ok: false; error: string }> {
+    try {
+        const response = await fetch(etiquetasPdfRoute().url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                Accept: 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-XSRF-TOKEN': getCookie('XSRF-TOKEN') ?? '',
+            },
+            credentials: 'same-origin',
+            body: JSON.stringify({ activo_ids: activoIds }),
+        });
+
+        if (!response.ok) {
+            const data = await response.json().catch(() => ({}));
+
+            return { ok: false, error: data.error ?? 'No se pudo generar el PDF en este momento.' };
+        }
+
+        const blob = await response.blob();
+        const url  = URL.createObjectURL(blob);
+        const a    = document.createElement('a');
+        a.href = url;
+        a.download = 'etiquetas-activos.pdf';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+
+        return { ok: true };
+    } catch {
+        return { ok: false, error: 'No se pudo generar el PDF en este momento.' };
+    }
+}
+
 // ─── TabActivos ──────────────────────────────────────────────────────────────
 
 interface TabActivosProps {
@@ -105,6 +157,21 @@ function TabActivos({
     filtroUbicacionActual, setFiltroUbicacionActual,
     pageActivos, setPageActivos,
 }: TabActivosProps) {
+    const [descargandoPdf, setDescargandoPdf] = useState(false);
+    const [errorPdf, setErrorPdf] = useState('');
+
+    async function handleDescargarPdf() {
+        setDescargandoPdf(true);
+        setErrorPdf('');
+
+        const resultado = await descargarEtiquetasPdf(Array.from(selectedActivos));
+
+        if (!resultado.ok) {
+            setErrorPdf(resultado.error);
+        }
+
+        setDescargandoPdf(false);
+    }
 
     const activosFiltrados = useMemo(() => activos.filter(a => {
         const q = searchActivo.toLowerCase();
@@ -368,20 +435,41 @@ function TabActivos({
                 </div>
             </div>
 
-            {/* ── Botón agregar a cola ─────────────────────────────────────── */}
-            <div className="flex justify-end bg-white px-4 pb-4">
-                <button
-                    onClick={agregarACola}
-                    disabled={selectedActivos.size === 0}
-                    className={[
-                        'rounded-xl px-5 py-3 text-sm font-bold transition-colors',
-                        selectedActivos.size > 0
-                            ? 'bg-green-600 text-white hover:bg-green-700'
-                            : 'bg-gray-200 text-gray-400 cursor-not-allowed',
-                    ].join(' ')}
-                >
-                    + AGREGAR {selectedActivos.size > 0 ? selectedActivos.size : ''} SELECCIONADOS A COLA
-                </button>
+            {/* ── Descargar PDF real (servicio-etiquetas) + Agregar a cola ──── */}
+            <div className="flex flex-col items-end gap-2 bg-white px-4 pb-4">
+                {errorPdf && (
+                    <p className="flex items-center gap-1.5 text-sm text-red-600">
+                        <AlertTriangle size={14} />
+                        {errorPdf}
+                    </p>
+                )}
+                <div className="flex gap-3">
+                    <button
+                        onClick={handleDescargarPdf}
+                        disabled={selectedActivos.size === 0 || descargandoPdf}
+                        className={[
+                            'flex items-center gap-2 rounded-xl px-5 py-3 text-sm font-bold transition-colors',
+                            selectedActivos.size > 0 && !descargandoPdf
+                                ? 'bg-blue-600 text-white hover:bg-blue-700'
+                                : 'bg-gray-200 text-gray-400 cursor-not-allowed',
+                        ].join(' ')}
+                    >
+                        {descargandoPdf ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />}
+                        DESCARGAR PDF
+                    </button>
+                    <button
+                        onClick={agregarACola}
+                        disabled={selectedActivos.size === 0}
+                        className={[
+                            'rounded-xl px-5 py-3 text-sm font-bold transition-colors',
+                            selectedActivos.size > 0
+                                ? 'bg-green-600 text-white hover:bg-green-700'
+                                : 'bg-gray-200 text-gray-400 cursor-not-allowed',
+                        ].join(' ')}
+                    >
+                        + AGREGAR {selectedActivos.size > 0 ? selectedActivos.size : ''} SELECCIONADOS A COLA
+                    </button>
+                </div>
             </div>
         </div>
     );
