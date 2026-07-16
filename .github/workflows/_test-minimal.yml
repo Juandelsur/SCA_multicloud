@@ -1,0 +1,14 @@
+name: Test Minimal Reusable
+
+on:
+  workflow_call:
+    inputs:
+      service_name:
+        required: true
+        type: string
+
+jobs:
+  hello:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "hello ${{ inputs.service_name }}"
