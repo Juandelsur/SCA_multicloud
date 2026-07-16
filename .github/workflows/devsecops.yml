@@ -1,0 +1,185 @@
+name: DevSecOps — Evaluación 4
+
+# Workflow independiente y nuevo: no toca deploy.yml ni el job de deploy a EC2.
+# Corre en paralelo a "CI/CD — SCA-IT" (deploy.yml), así que si EC2 no tiene
+# instancias activas y ese pipeline falla en el job de deploy, este workflow
+# de seguridad no se ve afectado en absoluto (son archivos y jobs distintos).
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  security-scans:
+    name: 4 Fases DevSecOps (SAST + SCA + Secrets + IaC)
+    runs-on: ubuntu-latest
+
+    # Un solo job secuencial en vez de 4 jobs en paralelo: las 4 fases son
+    # rápidas (no requieren build de Docker ni servicios como Postgres), y
+    # mantenerlas en un job permite escribir un único resumen consolidado en
+    # $GITHUB_STEP_SUMMARY sin tener que pasar artefactos entre jobs
+    # (upload-artifact/download-artifact) solo para agregar 4 números. Si
+    # alguna fase se vuelve lenta más adelante, separarla en su propio job
+    # paralelo es un cambio aislado y sencillo.
+    permissions:
+      contents: read
+      security-events: write
+
+    steps:
+      - name: Checkout (historial completo para Gitleaks/Semgrep)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # ─────────────────────────────────────────────────────────────────
+      # FASE 1 — SAST: Semgrep (security-audit + reglas PHP + JS/TS)
+      # ─────────────────────────────────────────────────────────────────
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Instalar Semgrep
+        run: pip install semgrep
+
+      - name: "FASE 1/4 — SAST: Semgrep"
+        id: semgrep
+        continue-on-error: true
+        run: |
+          semgrep scan \
+            --config p/security-audit \
+            --config p/php \
+            --config p/javascript \
+            --sarif --output semgrep-results.sarif \
+            --metrics off \
+            .
+          COUNT=$(jq '[.runs[].results[]] | length' semgrep-results.sarif 2>/dev/null || echo 0)
+          echo "count=$COUNT" >> "$GITHUB_OUTPUT"
+          echo "Semgrep encontró $COUNT hallazgo(s)."
+
+      - name: Subir SARIF de Semgrep a GitHub Security
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        continue-on-error: true
+        with:
+          sarif_file: "semgrep-results.sarif"
+          category: "semgrep-sast"
+
+      # ─────────────────────────────────────────────────────────────────
+      # FASE 2 — SCA: composer audit + npm audit
+      # ─────────────────────────────────────────────────────────────────
+      - name: Setup PHP 8.4
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.4"
+          extensions: pdo, pdo_pgsql, gd, zip, bcmath, intl
+
+      - name: Instalar dependencias PHP
+        run: composer install --no-interaction --prefer-dist
+
+      - name: "FASE 2/4 — SCA: composer audit"
+        id: composer_audit
+        continue-on-error: true
+        run: |
+          composer audit --no-interaction --format=json > composer-audit.json || true
+          COUNT=$(jq '[.advisories // {} | .[]] | flatten | length' composer-audit.json 2>/dev/null || echo 0)
+          echo "count=$COUNT" >> "$GITHUB_OUTPUT"
+
+          echo "=== Resumen composer audit (dependencias PHP) ==="
+          if [ "$COUNT" -eq 0 ]; then
+            echo "Sin vulnerabilidades conocidas en dependencias PHP."
+          else
+            echo "$COUNT advisorie(s) encontrado(s):"
+            jq -r '.advisories // {} | to_entries[] | "\n\(.key):" as $pkg | $pkg, (.value[] | "  - [\(.severity // "N/A")] \(.title) — \(.cve // .advisoryId)")' composer-audit.json
+          fi
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - name: Instalar dependencias Node
+        run: npm ci
+
+      - name: "FASE 2/4 — SCA: npm audit"
+        id: npm_audit
+        continue-on-error: true
+        run: |
+          npm audit --json > npm-audit.json || true
+          COUNT=$(jq '.metadata.vulnerabilities.total // 0' npm-audit.json 2>/dev/null || echo 0)
+          echo "count=$COUNT" >> "$GITHUB_OUTPUT"
+
+          echo "=== Resumen npm audit (dependencias Node/JS) ==="
+          if [ "$COUNT" -eq 0 ]; then
+            echo "Sin vulnerabilidades conocidas en dependencias Node."
+          else
+            echo "$COUNT vulnerabilidad(es) encontrada(s) por severidad:"
+            jq -r '.metadata.vulnerabilities | to_entries[] | "  - \(.key): \(.value)"' npm-audit.json
+          fi
+
+      # ─────────────────────────────────────────────────────────────────
+      # FASE 3 — Secret Scanning: Gitleaks
+      # ─────────────────────────────────────────────────────────────────
+      # .gitleaksignore en la raíz del repo suprime 3 falsos positivos ya
+      # verificados manualmente (ejemplos de documentación, no secretos
+      # reales — ver commit que introduce este workflow).
+      - name: "FASE 3/4 — Secret Scanning: Gitleaks"
+        id: gitleaks
+        continue-on-error: true
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # ─────────────────────────────────────────────────────────────────
+      # FASE 4 — IaC Scanning: Trivy config (Dockerfile + Terraform)
+      # Distinto del Trivy de deploy.yml, que escanea la imagen ya construida.
+      # ─────────────────────────────────────────────────────────────────
+      - name: "FASE 4/4 — IaC Scanning: Trivy config"
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: "config"
+          scan-ref: "."
+          format: "sarif"
+          output: "trivy-config-results.sarif"
+          exit-code: "0"
+
+      - name: Contar hallazgos de Trivy config
+        id: trivy_config
+        if: always()
+        continue-on-error: true
+        run: |
+          COUNT=$(jq '[.runs[].results[]] | length' trivy-config-results.sarif 2>/dev/null || echo 0)
+          echo "count=$COUNT" >> "$GITHUB_OUTPUT"
+          echo "Trivy config encontró $COUNT hallazgo(s) en Dockerfile/Terraform."
+
+      - name: Subir SARIF de Trivy config a GitHub Security
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        continue-on-error: true
+        with:
+          sarif_file: "trivy-config-results.sarif"
+          category: "trivy-config"
+
+      # ─────────────────────────────────────────────────────────────────
+      # RESUMEN CONSOLIDADO — visible en la pestaña "Summary" del job,
+      # sin tener que navegar los 4 logs por separado.
+      # ─────────────────────────────────────────────────────────────────
+      - name: Resumen consolidado de las 4 fases
+        if: always()
+        run: |
+          {
+            echo "# 🛡️ DevSecOps — Resumen de las 4 fases"
+            echo ""
+            echo "| Fase | Herramienta | Hallazgos | Estado del step |"
+            echo "|------|-------------|-----------|------------------|"
+            echo "| 1. SAST | Semgrep (security-audit, php, javascript) | ${{ steps.semgrep.outputs.count || 'N/A' }} | ${{ steps.semgrep.outcome }} |"
+            echo "| 2. SCA | composer audit | ${{ steps.composer_audit.outputs.count || 'N/A' }} | ${{ steps.composer_audit.outcome }} |"
+            echo "| 2. SCA | npm audit | ${{ steps.npm_audit.outputs.count || 'N/A' }} | ${{ steps.npm_audit.outcome }} |"
+            echo "| 3. Secret Scanning | Gitleaks | ver log del step | ${{ steps.gitleaks.outcome }} |"
+            echo "| 4. IaC Scanning | Trivy config (Dockerfile + Terraform) | ${{ steps.trivy_config.outputs.count || 'N/A' }} | ${{ steps.trivy_config.outcome }} |"
+            echo ""
+            echo "Ninguna fase bloquea el pipeline todavía (\`continue-on-error: true\`)."
+            echo "Reportes SARIF (Semgrep, Trivy config) disponibles en la pestaña **Security → Code scanning** del repo."
+          } >> "$GITHUB_STEP_SUMMARY"

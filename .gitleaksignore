@@ -1,0 +1,7 @@
+# Falsos positivos verificados manualmente (ver commit que agrega devsecops.yml).
+# Los 3 son el mismo ejemplo de documentación ("cómo NO hacerlo") con claves
+# inventadas/truncadas (sk_live_abc123, el AWS_SECRET_ACCESS_KEY de ejemplo
+# oficial de AWS), repetido en 3 copias de la misma skill de terceros.
+45df87540c43e10eb02b1c07e74caed62848837c:.agents/skills/laravel-best-practices/rules/config.md:generic-api-key:30
+45df87540c43e10eb02b1c07e74caed62848837c:.cursor/skills/laravel-best-practices/rules/config.md:generic-api-key:30
+45df87540c43e10eb02b1c07e74caed62848837c:.junie/skills/laravel-best-practices/rules/config.md:generic-api-key:30
