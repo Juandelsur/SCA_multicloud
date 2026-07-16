@@ -1,0 +1,33 @@
+services:
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: auditoria_test
+      POSTGRES_USER: auditoria_user
+      POSTGRES_PASSWORD: auditoria_secret
+    ports:
+      - "5433:5432"
+    volumes:
+      - auditoria_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U auditoria_user"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  servicio-auditoria:
+    build: .
+    ports:
+      - "3020:3000"
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_DATABASE: auditoria_test
+      DB_USERNAME: auditoria_user
+      DB_PASSWORD: auditoria_secret
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  auditoria_db_data:
