@@ -43,4 +43,8 @@ return [
         'url' => env('ETIQUETAS_SERVICE_URL'),
     ],
 
+    'reportes' => [
+        'url' => env('REPORTES_SERVICE_URL'),
+    ],
+
 ];

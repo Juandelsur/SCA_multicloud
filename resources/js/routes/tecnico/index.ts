@@ -1,6 +1,6 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../wayfinder'
 /**
-* @see routes/web.php:396
+* @see routes/web.php:381
 * @route '/tecnico'
 */
 export const home = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -14,7 +14,7 @@ home.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:396
+* @see routes/web.php:381
 * @route '/tecnico'
 */
 home.url = (options?: RouteQueryOptions) => {
@@ -22,7 +22,7 @@ home.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:396
+* @see routes/web.php:381
 * @route '/tecnico'
 */
 home.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -31,7 +31,7 @@ home.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:396
+* @see routes/web.php:381
 * @route '/tecnico'
 */
 home.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -40,7 +40,7 @@ home.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:396
+* @see routes/web.php:381
 * @route '/tecnico'
 */
 const homeForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -49,7 +49,7 @@ const homeForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:396
+* @see routes/web.php:381
 * @route '/tecnico'
 */
 homeForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -58,7 +58,7 @@ homeForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:396
+* @see routes/web.php:381
 * @route '/tecnico'
 */
 homeForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -74,7 +74,7 @@ homeForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 home.form = homeForm
 
 /**
-* @see routes/web.php:408
+* @see routes/web.php:393
 * @route '/tecnico/scan'
 */
 export const scan = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -88,7 +88,7 @@ scan.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:408
+* @see routes/web.php:393
 * @route '/tecnico/scan'
 */
 scan.url = (options?: RouteQueryOptions) => {
@@ -96,7 +96,7 @@ scan.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:408
+* @see routes/web.php:393
 * @route '/tecnico/scan'
 */
 scan.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -105,7 +105,7 @@ scan.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:408
+* @see routes/web.php:393
 * @route '/tecnico/scan'
 */
 scan.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -114,7 +114,7 @@ scan.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:408
+* @see routes/web.php:393
 * @route '/tecnico/scan'
 */
 const scanForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -123,7 +123,7 @@ const scanForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:408
+* @see routes/web.php:393
 * @route '/tecnico/scan'
 */
 scanForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -132,7 +132,7 @@ scanForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:408
+* @see routes/web.php:393
 * @route '/tecnico/scan'
 */
 scanForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -148,7 +148,7 @@ scanForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 scan.form = scanForm
 
 /**
-* @see routes/web.php:421
+* @see routes/web.php:406
 * @route '/tecnico/imprimir'
 */
 export const imprimir = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -162,7 +162,7 @@ imprimir.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:421
+* @see routes/web.php:406
 * @route '/tecnico/imprimir'
 */
 imprimir.url = (options?: RouteQueryOptions) => {
@@ -170,7 +170,7 @@ imprimir.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:421
+* @see routes/web.php:406
 * @route '/tecnico/imprimir'
 */
 imprimir.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -179,7 +179,7 @@ imprimir.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:421
+* @see routes/web.php:406
 * @route '/tecnico/imprimir'
 */
 imprimir.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -188,7 +188,7 @@ imprimir.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:421
+* @see routes/web.php:406
 * @route '/tecnico/imprimir'
 */
 const imprimirForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -197,7 +197,7 @@ const imprimirForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> =
 })
 
 /**
-* @see routes/web.php:421
+* @see routes/web.php:406
 * @route '/tecnico/imprimir'
 */
 imprimirForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -206,7 +206,7 @@ imprimirForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => 
 })
 
 /**
-* @see routes/web.php:421
+* @see routes/web.php:406
 * @route '/tecnico/imprimir'
 */
 imprimirForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({

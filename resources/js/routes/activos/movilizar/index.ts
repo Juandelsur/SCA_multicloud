@@ -1,6 +1,6 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../wayfinder'
 /**
-* @see routes/web.php:111
+* @see routes/web.php:96
 * @route '/activos/{activo}/movilizar'
 */
 export const form = (args: { activo: number | { id: number } } | [activo: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -14,7 +14,7 @@ form.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:111
+* @see routes/web.php:96
 * @route '/activos/{activo}/movilizar'
 */
 form.url = (args: { activo: number | { id: number } } | [activo: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -46,7 +46,7 @@ form.url = (args: { activo: number | { id: number } } | [activo: number | { id: 
 }
 
 /**
-* @see routes/web.php:111
+* @see routes/web.php:96
 * @route '/activos/{activo}/movilizar'
 */
 form.get = (args: { activo: number | { id: number } } | [activo: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -55,7 +55,7 @@ form.get = (args: { activo: number | { id: number } } | [activo: number | { id: 
 })
 
 /**
-* @see routes/web.php:111
+* @see routes/web.php:96
 * @route '/activos/{activo}/movilizar'
 */
 form.head = (args: { activo: number | { id: number } } | [activo: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -64,7 +64,7 @@ form.head = (args: { activo: number | { id: number } } | [activo: number | { id:
 })
 
 /**
-* @see routes/web.php:111
+* @see routes/web.php:96
 * @route '/activos/{activo}/movilizar'
 */
 const formForm = (args: { activo: number | { id: number } } | [activo: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -73,7 +73,7 @@ const formForm = (args: { activo: number | { id: number } } | [activo: number | 
 })
 
 /**
-* @see routes/web.php:111
+* @see routes/web.php:96
 * @route '/activos/{activo}/movilizar'
 */
 formForm.get = (args: { activo: number | { id: number } } | [activo: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -82,7 +82,7 @@ formForm.get = (args: { activo: number | { id: number } } | [activo: number | { 
 })
 
 /**
-* @see routes/web.php:111
+* @see routes/web.php:96
 * @route '/activos/{activo}/movilizar'
 */
 formForm.head = (args: { activo: number | { id: number } } | [activo: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({

@@ -1,6 +1,6 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../wayfinder'
 /**
-* @see routes/web.php:150
+* @see routes/web.php:135
 * @route '/dashboard/otros'
 */
 export const otros = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -14,7 +14,7 @@ otros.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:150
+* @see routes/web.php:135
 * @route '/dashboard/otros'
 */
 otros.url = (options?: RouteQueryOptions) => {
@@ -22,7 +22,7 @@ otros.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:150
+* @see routes/web.php:135
 * @route '/dashboard/otros'
 */
 otros.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -31,7 +31,7 @@ otros.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:150
+* @see routes/web.php:135
 * @route '/dashboard/otros'
 */
 otros.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -40,7 +40,7 @@ otros.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:150
+* @see routes/web.php:135
 * @route '/dashboard/otros'
 */
 const otrosForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -49,7 +49,7 @@ const otrosForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => (
 })
 
 /**
-* @see routes/web.php:150
+* @see routes/web.php:135
 * @route '/dashboard/otros'
 */
 otrosForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -58,7 +58,7 @@ otrosForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:150
+* @see routes/web.php:135
 * @route '/dashboard/otros'
 */
 otrosForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -74,7 +74,7 @@ otrosForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 otros.form = otrosForm
 
 /**
-* @see routes/web.php:242
+* @see routes/web.php:227
 * @route '/dashboard/gestion'
 */
 export const gestion = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -88,7 +88,7 @@ gestion.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:242
+* @see routes/web.php:227
 * @route '/dashboard/gestion'
 */
 gestion.url = (options?: RouteQueryOptions) => {
@@ -96,7 +96,7 @@ gestion.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:242
+* @see routes/web.php:227
 * @route '/dashboard/gestion'
 */
 gestion.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -105,7 +105,7 @@ gestion.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:242
+* @see routes/web.php:227
 * @route '/dashboard/gestion'
 */
 gestion.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -114,7 +114,7 @@ gestion.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:242
+* @see routes/web.php:227
 * @route '/dashboard/gestion'
 */
 const gestionForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -123,7 +123,7 @@ const gestionForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> =>
 })
 
 /**
-* @see routes/web.php:242
+* @see routes/web.php:227
 * @route '/dashboard/gestion'
 */
 gestionForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -132,7 +132,7 @@ gestionForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => (
 })
 
 /**
-* @see routes/web.php:242
+* @see routes/web.php:227
 * @route '/dashboard/gestion'
 */
 gestionForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({

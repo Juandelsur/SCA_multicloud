@@ -8,6 +8,7 @@ use App\Http\Controllers\HistorialController;
 use App\Http\Controllers\TipoEquipoController;
 use App\Http\Controllers\UbicacionController;
 use App\Http\Controllers\UsuarioController;
+use App\Services\ReportesService;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -16,17 +17,10 @@ Route::get('/', function () {
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::middleware('role:Administrador')->group(function () {
-        Route::get('dashboard', function (\Illuminate\Http\Request $request) {
+        Route::get('dashboard', function (\Illuminate\Http\Request $request, ReportesService $reportes) {
             $totalActivos = \App\Models\Activo::count();
 
-            $estadosGlobal = \App\Models\EstadoActivo::withCount('activos')
-                ->get(['id', 'nombre_estado'])
-                ->map(fn ($e) => [
-                    'id'         => $e->id,
-                    'nombre'     => $e->nombre_estado,
-                    'total'      => $e->activos_count,
-                    'porcentaje' => $totalActivos > 0 ? round($e->activos_count / $totalActivos * 100) : 0,
-                ])->values();
+            $estadosGlobal = $reportes->activosPorEstado();
 
             $ubicaciones = \App\Models\Ubicacion::with('departamento:id,nombre_departamento')
                 ->get(['id', 'nombre_ubicacion', 'departamento_id'])
@@ -40,29 +34,20 @@ Route::middleware(['auth', 'verified'])->group(function () {
             $ubicacionId = $request->integer('ubicacion_id') ?: null;
 
             if ($ubicacionId) {
-                $estadosUbicacion = \App\Models\EstadoActivo::withCount(['activos' => fn ($q) => $q->where('ubicacion_actual_id', $ubicacionId)])
-                    ->get(['id', 'nombre_estado'])
-                    ->map(fn ($e) => ['id' => $e->id, 'nombre' => $e->nombre_estado, 'total' => $e->activos_count])
-                    ->values();
-
-                $ultimosMovimientos = \App\Models\HistorialMovimiento::with([
-                    'activo:id,codigo_inventario,marca,modelo',
-                    'ubicacionOrigen:id,nombre_ubicacion',
-                    'ubicacionDestino:id,nombre_ubicacion',
-                    'usuarioRegistra:id,name',
-                ])->where('ubicacion_destino_id', $ubicacionId)->latest()->take(15)->get();
+                $estadosUbicacion   = $reportes->activosPorUbicacion($ubicacionId);
+                $ultimosMovimientos = $reportes->movimientosRecientes($ubicacionId, 15);
             } else {
                 $estadosUbicacion = $estadosGlobal->map(fn ($e) => [
                     'id' => $e['id'], 'nombre' => $e['nombre'], 'total' => $e['total'],
                 ])->values();
 
-                $ultimosMovimientos = \App\Models\HistorialMovimiento::with([
-                    'activo:id,codigo_inventario,marca,modelo',
-                    'ubicacionOrigen:id,nombre_ubicacion',
-                    'ubicacionDestino:id,nombre_ubicacion',
-                    'usuarioRegistra:id,name',
-                ])->latest()->take(15)->get();
+                $ultimosMovimientos = $reportes->movimientosRecientes(null, 15);
             }
+
+            // Temporal: confirma en logs si los datos vinieron del microservicio
+            // o del fallback local, sin exponer nada al usuario. Sacar si genera
+            // demasiado ruido en producción.
+            \Illuminate\Support\Facades\Log::info('ReportesService — fuente de datos (Admin)', $reportes->fuentes());
 
             return inertia('Admin/Home', [
                 'totalActivos'       => $totalActivos,
@@ -450,21 +435,21 @@ Route::middleware(['auth', 'role:Técnico'])->group(function () {
 // JEFE — dashboard de solo lectura para jefatura
 // =========================================================
 Route::middleware(['auth', 'role:Jefe'])->group(function () {
-    Route::get('/jefe', function () {
+    Route::get('/jefe', function (ReportesService $reportes) {
         $totalActivos   = \App\Models\Activo::count();
         $totalUsuarios  = \App\Models\User::count();
         $movimientosMes = \App\Models\HistorialMovimiento::whereMonth('created_at', now()->month)
             ->whereYear('created_at', now()->year)
             ->count();
 
-        $activosPorEstado = \App\Models\Activo::with('estado:id,nombre_estado')
-            ->get(['id', 'estado_id'])
-            ->groupBy('estado_id')
-            ->map(fn ($g) => [
-                'nombre' => $g->first()->estado?->nombre_estado ?? 'Sin estado',
-                'total'  => $g->count(),
-            ])->values();
+        // Jefe/Home no filtra por ubicación (no tiene ese select hoy, a
+        // diferencia de Admin/Home) — se pide siempre el desglose global.
+        $activosPorEstado = $reportes->activosPorEstado()
+            ->map(fn ($e) => ['nombre' => $e['nombre'], 'total' => $e['total']])
+            ->values();
 
+        // servicio-reportes no tiene endpoint para "por tipo" ni "por
+        // departamento" — quedan 100% locales, no hay nada que conectar acá.
         $activosPorTipo = \App\Models\Activo::with('tipo:id,nombre_tipo')
             ->get(['id', 'tipo_id'])
             ->groupBy('tipo_id')
@@ -479,17 +464,15 @@ Route::middleware(['auth', 'role:Jefe'])->group(function () {
             ->map(fn ($g, $nombre) => ['nombre' => $nombre, 'total' => $g->count()])
             ->values();
 
-        $ultimosMovimientos = \App\Models\HistorialMovimiento::with([
-            'activo:id,codigo_inventario,marca,modelo',
-            'ubicacionOrigen:id,nombre_ubicacion',
-            'ubicacionDestino:id,nombre_ubicacion',
-            'usuarioRegistra:id,name',
-        ])->latest()->take(10)->get();
+        $ultimosMovimientos = $reportes->movimientosRecientes(null, 10);
 
         $usuariosPorRol = \Spatie\Permission\Models\Role::withCount('users')
             ->get()
             ->map(fn ($r) => ['nombre' => $r->name, 'total' => $r->users_count])
             ->values();
+
+        // Temporal: mismo diagnóstico que en /dashboard.
+        \Illuminate\Support\Facades\Log::info('ReportesService — fuente de datos (Jefe)', $reportes->fuentes());
 
         return inertia('Jefe/Home', compact(
             'totalActivos', 'totalUsuarios', 'movimientosMes',
