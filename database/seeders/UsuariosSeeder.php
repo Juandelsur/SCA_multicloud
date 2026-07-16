@@ -13,45 +13,39 @@ class UsuariosSeeder extends Seeder
 
     public function run(): void
     {
-        $usuarios = [
-            [
-                'name'           => 'admin',
-                'nombre_completo' => 'Administrador Sistema',
-                'email'          => 'admin@sca.cl',
-                'rol'            => 'Administrador',
-            ],
-            [
-                'name'           => 'tecnico',
-                'nombre_completo' => 'Técnico Soporte',
-                'email'          => 'tecnico@sca.cl',
-                'rol'            => 'Técnico',
-            ],
-            [
-                'name'           => 'jefe',
-                'nombre_completo' => 'Jefe Informática',
-                'email'          => 'jefe@sca.cl',
-                'rol'            => 'Jefe',
-            ],
+        $config = [
+            'Administrador' => ['prefijo' => 'admin', 'cantidad' => 2, 'nombre_base' => 'Administrador'],
+            'Técnico'       => ['prefijo' => 'tecnico', 'cantidad' => 5, 'nombre_base' => 'Técnico'],
+            'Jefe'          => ['prefijo' => 'jefe', 'cantidad' => 5, 'nombre_base' => 'Jefe'],
         ];
 
-        foreach ($usuarios as $datos) {
-            $rol = $datos['rol'];
-            unset($datos['rol']);
+        $credenciales = [];
 
-            $usuario = User::firstOrCreate(
-                ['email' => $datos['email']],
-                array_merge($datos, [
-                    'email_verified_at' => now(),
-                    'password'          => Hash::make('password'),
-                ]),
-            );
+        foreach ($config as $rol => $datos) {
+            for ($n = 1; $n <= $datos['cantidad']; $n++) {
+                $email    = "{$datos['prefijo']}{$n}@sca.cl";
+                $password = "{$datos['prefijo']}{$n}123";
 
-            // Asigna el rol solo si aún no lo tiene (idempotente).
-            if (! $usuario->hasRole($rol)) {
-                $usuario->assignRole($rol);
+                $usuario = User::firstOrCreate(
+                    ['email' => $email],
+                    [
+                        'name'              => "{$datos['prefijo']}{$n}",
+                        'nombre_completo'   => "{$datos['nombre_base']} {$n}",
+                        'email_verified_at' => now(),
+                        'password'          => Hash::make($password),
+                    ],
+                );
+
+                // Asigna el rol solo si aún no lo tiene (idempotente).
+                if (! $usuario->hasRole($rol)) {
+                    $usuario->assignRole($rol);
+                }
+
+                $credenciales[] = [$rol, $email, $password];
             }
         }
 
-        $this->command->info('Usuarios demo sembrados: admin@sca.cl, tecnico@sca.cl, jefe@sca.cl (password: password).');
+        $this->command->info('Usuarios demo sembrados correctamente.');
+        $this->command->table(['Rol', 'Email', 'Password'], $credenciales);
     }
 }

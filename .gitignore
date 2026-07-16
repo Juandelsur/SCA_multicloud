@@ -44,3 +44,4 @@ infra/*.tfstate.backup
 # Microservicios
 servicio-etiquetas/node_modules
 servicio-auditoria/node_modules
+servicio-reportes/node_modules

@@ -1,0 +1,18 @@
+{
+  "name": "servicio-reportes",
+  "version": "1.0.0",
+  "description": "Microservicio standalone de reportes de solo lectura sobre la base de datos de SCA-IT",
+  "private": true,
+  "type": "commonjs",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "pg": "^8.13.1"
+  }
+}
