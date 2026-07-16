@@ -17,5 +17,9 @@ on:
 jobs:
   hello:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      security-events: write
     steps:
       - run: echo "hello ${{ inputs.service_name }} ${{ inputs.service_folder }} ${{ inputs.needs_db }}"
