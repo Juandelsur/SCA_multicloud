@@ -8,4 +8,6 @@ jobs:
     uses: ./.github/workflows/_test-minimal.yml
     with:
       service_name: etiquetas
+      service_folder: servicio-etiquetas
+      needs_db: false
     secrets: inherit
