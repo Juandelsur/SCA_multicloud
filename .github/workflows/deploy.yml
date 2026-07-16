@@ -139,8 +139,22 @@ jobs:
       packages: read
 
     steps:
+      - uses: actions/checkout@v4
+
       - name: Normalizar nombre de imagen a minúsculas
         run: echo "IMAGE_NAME=$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+
+      # docker-compose.prod.yml no vive en los hosts EC2 (el deploy nunca
+      # clona el repo ahí) — hay que copiarlo antes de poder usar
+      # `docker compose -f docker-compose.prod.yml ...` contra ese archivo.
+      - name: Copiar docker-compose.prod.yml a EC2-A
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.EC2_A_IP }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}
+          source: "docker-compose.prod.yml"
+          target: "~/"
 
       - name: Deploy a EC2-A (us-east-1a)
         uses: appleboy/ssh-action@v1
@@ -151,34 +165,26 @@ jobs:
           script: |
             set -e
             echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-            docker pull ghcr.io/${{ env.IMAGE_NAME }}:latest
-            docker stop sca-it || true
-            docker rm sca-it || true
-            docker run -d \
-              --name sca-it \
-              --restart unless-stopped \
-              -p 8080:8080 \
-              -e APP_ENV=production \
-              -e APP_DEBUG=false \
-              -e APP_KEY="${{ secrets.APP_KEY }}" \
-              -e DB_CONNECTION=pgsql \
-              -e DB_HOST="${{ secrets.DB_HOST }}" \
-              -e DB_PORT=5432 \
-              -e DB_DATABASE=sca_it \
-              -e DB_USERNAME=sca_user \
-              -e DB_PASSWORD="${{ secrets.DB_PASSWORD }}" \
-              -e SESSION_DRIVER=database \
-              -e CACHE_STORE=database \
-              -e FILESYSTEM_DISK=azure \
-              -e AZURE_STORAGE_NAME="${{ secrets.AZURE_STORAGE_NAME }}" \
-              -e AZURE_STORAGE_KEY="${{ secrets.AZURE_STORAGE_KEY }}" \
-              -e AZURE_STORAGE_CONTAINER=activos \
-              ghcr.io/${{ env.IMAGE_NAME }}:latest
+            export APP_KEY="${{ secrets.APP_KEY }}"
+            export DB_HOST="${{ secrets.DB_HOST }}"
+            export DB_PASSWORD="${{ secrets.DB_PASSWORD }}"
+            export AZURE_STORAGE_NAME="${{ secrets.AZURE_STORAGE_NAME }}"
+            export AZURE_STORAGE_KEY="${{ secrets.AZURE_STORAGE_KEY }}"
+            docker compose -f docker-compose.prod.yml pull sca-it
+            docker compose -f docker-compose.prod.yml up -d sca-it
             sleep 15
-            docker exec sca-it php artisan migrate --force
-            docker exec sca-it php artisan db:seed --force
-            docker exec sca-it php artisan optimize:clear
+            docker compose -f docker-compose.prod.yml exec -T sca-it php artisan migrate --force
+            docker compose -f docker-compose.prod.yml exec -T sca-it php artisan optimize:clear
             docker image prune -af
+
+      - name: Copiar docker-compose.prod.yml a EC2-B
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.EC2_B_IP }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}
+          source: "docker-compose.prod.yml"
+          target: "~/"
 
       - name: Deploy a EC2-B (us-east-1b)
         uses: appleboy/ssh-action@v1
@@ -189,31 +195,14 @@ jobs:
           script: |
             set -e
             echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-            docker pull ghcr.io/${{ env.IMAGE_NAME }}:latest
-            docker stop sca-it || true
-            docker rm sca-it || true
-            docker run -d \
-              --name sca-it \
-              --restart unless-stopped \
-              -p 8080:8080 \
-              -e APP_ENV=production \
-              -e APP_DEBUG=false \
-              -e APP_KEY="${{ secrets.APP_KEY }}" \
-              -e DB_CONNECTION=pgsql \
-              -e DB_HOST="${{ secrets.DB_HOST }}" \
-              -e DB_PORT=5432 \
-              -e DB_DATABASE=sca_it \
-              -e DB_USERNAME=sca_user \
-              -e DB_PASSWORD="${{ secrets.DB_PASSWORD }}" \
-              -e SESSION_DRIVER=database \
-              -e CACHE_STORE=database \
-              -e FILESYSTEM_DISK=azure \
-              -e AZURE_STORAGE_NAME="${{ secrets.AZURE_STORAGE_NAME }}" \
-              -e AZURE_STORAGE_KEY="${{ secrets.AZURE_STORAGE_KEY }}" \
-              -e AZURE_STORAGE_CONTAINER=activos \
-              ghcr.io/${{ env.IMAGE_NAME }}:latest
+            export APP_KEY="${{ secrets.APP_KEY }}"
+            export DB_HOST="${{ secrets.DB_HOST }}"
+            export DB_PASSWORD="${{ secrets.DB_PASSWORD }}"
+            export AZURE_STORAGE_NAME="${{ secrets.AZURE_STORAGE_NAME }}"
+            export AZURE_STORAGE_KEY="${{ secrets.AZURE_STORAGE_KEY }}"
+            docker compose -f docker-compose.prod.yml pull sca-it
+            docker compose -f docker-compose.prod.yml up -d sca-it
             sleep 15
-            docker exec sca-it php artisan migrate --force
-            docker exec sca-it php artisan db:seed --force
-            docker exec sca-it php artisan optimize:clear
+            docker compose -f docker-compose.prod.yml exec -T sca-it php artisan migrate --force
+            docker compose -f docker-compose.prod.yml exec -T sca-it php artisan optimize:clear
             docker image prune -af

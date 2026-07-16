@@ -1,0 +1,86 @@
+# Orquestación compartida de los 4 módulos en producción (EC2-A / EC2-B).
+#
+# Cada módulo tiene su propio pipeline y se despliega de forma independiente:
+# el job de deploy de la App Principal corre `up -d sca-it` (no `up -d` a
+# secas), así que solo toca su propio contenedor aunque este archivo liste
+# los 4 servicios. Los pipelines de los 3 microservicios (tarea siguiente)
+# harán lo mismo con `up -d servicio-<nombre>`.
+#
+# Las imágenes de servicio-etiquetas, servicio-auditoria y servicio-reportes
+# todavía NO existen en GHCR — las publica la tarea siguiente. Hasta
+# entonces, `docker compose up` fallará esperadamente en esos 3 servicios.
+services:
+  sca-it:
+    image: ghcr.io/juandelsur/sca_multicloud:latest
+    container_name: sca-it
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      APP_ENV: production
+      APP_DEBUG: "false"
+      APP_KEY: ${APP_KEY}
+      DB_CONNECTION: pgsql
+      DB_HOST: ${DB_HOST}
+      DB_PORT: 5432
+      DB_DATABASE: sca_it
+      DB_USERNAME: sca_user
+      DB_PASSWORD: ${DB_PASSWORD}
+      SESSION_DRIVER: database
+      CACHE_STORE: database
+      FILESYSTEM_DISK: azure
+      AZURE_STORAGE_NAME: ${AZURE_STORAGE_NAME}
+      AZURE_STORAGE_KEY: ${AZURE_STORAGE_KEY}
+      AZURE_STORAGE_CONTAINER: activos
+      # Contrato con los 3 microservicios: nombre de servicio compose = DNS
+      # interno en la red sca-it-net, puerto 3000 (el que exponen sus
+      # Dockerfiles). No requiere que estén levantados para que sca-it
+      # arranque; solo fallan las llamadas HTTP puntuales si no lo están.
+      ETIQUETAS_SERVICE_URL: http://servicio-etiquetas:3000
+      AUDITORIA_SERVICE_URL: http://servicio-auditoria:3000
+      REPORTES_SERVICE_URL: http://servicio-reportes:3000
+    networks:
+      - sca-it-net
+
+  servicio-etiquetas:
+    image: ghcr.io/juandelsur/sca_multicloud-etiquetas:latest
+    container_name: servicio-etiquetas
+    restart: unless-stopped
+    environment:
+      PORT: 3000
+    networks:
+      - sca-it-net
+
+  servicio-auditoria:
+    image: ghcr.io/juandelsur/sca_multicloud-auditoria:latest
+    container_name: servicio-auditoria
+    restart: unless-stopped
+    environment:
+      # Mismas credenciales que usa Laravel: escribe en la misma RDS/Postgres.
+      DB_HOST: ${DB_HOST}
+      DB_PORT: 5432
+      DB_DATABASE: sca_it
+      DB_USERNAME: sca_user
+      DB_PASSWORD: ${DB_PASSWORD}
+    networks:
+      - sca-it-net
+
+  servicio-reportes:
+    image: ghcr.io/juandelsur/sca_multicloud-reportes:latest
+    container_name: servicio-reportes
+    restart: unless-stopped
+    environment:
+      # Usuario de solo lectura (scripts/setup-readonly-user.sql en
+      # servicio-reportes/) — password propia, distinta de sca_user.
+      DB_HOST: ${DB_HOST}
+      DB_PORT: 5432
+      DB_DATABASE: sca_it
+      DB_USERNAME: reportes_readonly
+      DB_PASSWORD: ${REPORTES_DB_PASSWORD}
+    networks:
+      - sca-it-net
+
+networks:
+  sca-it-net:
+    name: sca-it-net
+    driver: bridge
