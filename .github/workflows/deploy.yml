@@ -87,14 +87,19 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      # Reemplaza docker/metadata-action@v5: esa acción llama incondicionalmente
+      # a GET /repos/{owner}/{repo} (sin try/catch) para generar labels OCI
+      # automáticos, y ese endpoint viene fallando con 500 intermitentes.
+      # Estos tags no necesitan ninguna llamada a la API de GitHub.
       - name: Metadata de la imagen
         id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-          tags: |
-            type=sha,prefix=sha-
-            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
+        run: |
+          SHA_SHORT="${GITHUB_SHA:0:7}"
+          TAGS="${REGISTRY}/${IMAGE_NAME}:sha-${SHA_SHORT}"
+          if [ "${GITHUB_REF}" = "refs/heads/main" ]; then
+            TAGS="${TAGS},${REGISTRY}/${IMAGE_NAME}:latest"
+          fi
+          echo "tags=${TAGS}" >> "$GITHUB_OUTPUT"
 
       - name: Build imagen Docker
         uses: docker/build-push-action@v5
@@ -102,7 +107,6 @@ jobs:
           context: .
           push: false
           tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
           load: true
 
       - name: Scan de vulnerabilidades con Trivy
@@ -127,7 +131,6 @@ jobs:
           context: .
           push: true
           tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
 
   deploy:
     name: Deploy a AWS EC2
