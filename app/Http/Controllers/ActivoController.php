@@ -12,6 +12,7 @@ use App\Models\EstadoActivo;
 use App\Models\HistorialMovimiento;
 use App\Models\TipoEquipo;
 use App\Models\Ubicacion;
+use App\Services\AuditoriaService;
 use App\Services\QrService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Database\QueryException;
@@ -27,6 +28,10 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 class ActivoController extends Controller
 {
     use AuthorizesRequests;
+
+    public function __construct(private readonly AuditoriaService $auditoriaService)
+    {
+    }
 
     public function index(): Response
     {
@@ -93,6 +98,13 @@ class ActivoController extends Controller
             'id'     => $activo->id,
             'codigo' => $activo->codigo_inventario,
         ]);
+
+        $this->auditoriaService->registrarEvento(
+            $activo->id,
+            auth()->user()->name,
+            'creacion',
+            "Activo creado: {$activo->marca} {$activo->modelo} ({$activo->codigo_inventario})",
+        );
 
         // back() en vez de redirect a activos.show: mantiene al usuario en la
         // página desde la que creó el activo (p.ej. /gestion/activos con sus filtros).
@@ -180,6 +192,13 @@ class ActivoController extends Controller
             'id'     => $activo->id,
         ]);
 
+        $this->auditoriaService->registrarEvento(
+            $activo->id,
+            auth()->user()->name,
+            'edicion',
+            "Activo actualizado: {$activo->marca} {$activo->modelo} ({$activo->codigo_inventario})",
+        );
+
         return back()->with('success', 'Activo actualizado correctamente.');
     }
 
@@ -194,6 +213,16 @@ class ActivoController extends Controller
                 // No bloquea el borrado del registro si el blob ya no existe o falla la conexión.
             }
         }
+
+        // Antes del delete real (no después): así queda registrado el intento
+        // aunque el borrado falle después por la restricción de FK (movimientos
+        // asociados) y se aborte con el mensaje de error de más abajo.
+        $this->auditoriaService->registrarEvento(
+            $activo->id,
+            auth()->user()->name,
+            'eliminacion',
+            "Solicitud de eliminación del activo: {$activo->marca} {$activo->modelo} ({$activo->codigo_inventario})",
+        );
 
         try {
             $activo->delete();
@@ -243,6 +272,21 @@ class ActivoController extends Controller
                 'ubicacion_destino_id' => $destinoId,
             ]);
         });
+
+        // Fuera de la transacción a propósito: es una llamada HTTP externa, no
+        // debe mantener locks de BD abiertos mientras espera/reintenta.
+        $nombres = Ubicacion::whereIn('id', [$origenId, $destinoId])->pluck('nombre_ubicacion', 'id');
+        $this->auditoriaService->registrarEvento(
+            $activo->id,
+            auth()->user()->name,
+            'movimiento',
+            sprintf(
+                'Trasladado de %s a %s (%s)',
+                $nombres[$origenId] ?? "ubicación #{$origenId}",
+                $nombres[$destinoId] ?? "ubicación #{$destinoId}",
+                $validated['tipo_movimiento'] ?? 'TRASLADO',
+            ),
+        );
 
         return redirect()->route('activos.show', [$activo->id, 'toast' => 'Activo movilizado correctamente.']);
     }

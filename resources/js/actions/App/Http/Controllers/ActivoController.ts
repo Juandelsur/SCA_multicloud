@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\ActivoController::index
-* @see app/Http/Controllers/ActivoController.php:31
+* @see app/Http/Controllers/ActivoController.php:36
 * @route '/activos'
 */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ index.definition = {
 
 /**
 * @see \App\Http\Controllers\ActivoController::index
-* @see app/Http/Controllers/ActivoController.php:31
+* @see app/Http/Controllers/ActivoController.php:36
 * @route '/activos'
 */
 index.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ index.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\ActivoController::index
-* @see app/Http/Controllers/ActivoController.php:31
+* @see app/Http/Controllers/ActivoController.php:36
 * @route '/activos'
 */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -35,7 +35,7 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\ActivoController::index
-* @see app/Http/Controllers/ActivoController.php:31
+* @see app/Http/Controllers/ActivoController.php:36
 * @route '/activos'
 */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -45,7 +45,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\ActivoController::index
-* @see app/Http/Controllers/ActivoController.php:31
+* @see app/Http/Controllers/ActivoController.php:36
 * @route '/activos'
 */
 const indexForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -55,7 +55,7 @@ const indexForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => (
 
 /**
 * @see \App\Http\Controllers\ActivoController::index
-* @see app/Http/Controllers/ActivoController.php:31
+* @see app/Http/Controllers/ActivoController.php:36
 * @route '/activos'
 */
 indexForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -65,7 +65,7 @@ indexForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\ActivoController::index
-* @see app/Http/Controllers/ActivoController.php:31
+* @see app/Http/Controllers/ActivoController.php:36
 * @route '/activos'
 */
 indexForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -82,7 +82,7 @@ index.form = indexForm
 
 /**
 * @see \App\Http\Controllers\ActivoController::create
-* @see app/Http/Controllers/ActivoController.php:42
+* @see app/Http/Controllers/ActivoController.php:47
 * @route '/activos/crear'
 */
 export const create = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -97,7 +97,7 @@ create.definition = {
 
 /**
 * @see \App\Http\Controllers\ActivoController::create
-* @see app/Http/Controllers/ActivoController.php:42
+* @see app/Http/Controllers/ActivoController.php:47
 * @route '/activos/crear'
 */
 create.url = (options?: RouteQueryOptions) => {
@@ -106,7 +106,7 @@ create.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\ActivoController::create
-* @see app/Http/Controllers/ActivoController.php:42
+* @see app/Http/Controllers/ActivoController.php:47
 * @route '/activos/crear'
 */
 create.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -116,7 +116,7 @@ create.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\ActivoController::create
-* @see app/Http/Controllers/ActivoController.php:42
+* @see app/Http/Controllers/ActivoController.php:47
 * @route '/activos/crear'
 */
 create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -126,7 +126,7 @@ create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\ActivoController::create
-* @see app/Http/Controllers/ActivoController.php:42
+* @see app/Http/Controllers/ActivoController.php:47
 * @route '/activos/crear'
 */
 const createForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -136,7 +136,7 @@ const createForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => 
 
 /**
 * @see \App\Http\Controllers\ActivoController::create
-* @see app/Http/Controllers/ActivoController.php:42
+* @see app/Http/Controllers/ActivoController.php:47
 * @route '/activos/crear'
 */
 createForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -146,7 +146,7 @@ createForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\ActivoController::create
-* @see app/Http/Controllers/ActivoController.php:42
+* @see app/Http/Controllers/ActivoController.php:47
 * @route '/activos/crear'
 */
 createForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -163,7 +163,7 @@ create.form = createForm
 
 /**
 * @see \App\Http\Controllers\ActivoController::store
-* @see app/Http/Controllers/ActivoController.php:53
+* @see app/Http/Controllers/ActivoController.php:58
 * @route '/activos'
 */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -178,7 +178,7 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\ActivoController::store
-* @see app/Http/Controllers/ActivoController.php:53
+* @see app/Http/Controllers/ActivoController.php:58
 * @route '/activos'
 */
 store.url = (options?: RouteQueryOptions) => {
@@ -187,7 +187,7 @@ store.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\ActivoController::store
-* @see app/Http/Controllers/ActivoController.php:53
+* @see app/Http/Controllers/ActivoController.php:58
 * @route '/activos'
 */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -197,7 +197,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\ActivoController::store
-* @see app/Http/Controllers/ActivoController.php:53
+* @see app/Http/Controllers/ActivoController.php:58
 * @route '/activos'
 */
 const storeForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -207,7 +207,7 @@ const storeForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => 
 
 /**
 * @see \App\Http\Controllers\ActivoController::store
-* @see app/Http/Controllers/ActivoController.php:53
+* @see app/Http/Controllers/ActivoController.php:58
 * @route '/activos'
 */
 storeForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -219,7 +219,7 @@ store.form = storeForm
 
 /**
 * @see \App\Http\Controllers\ActivoController::etiquetas
-* @see app/Http/Controllers/ActivoController.php:251
+* @see app/Http/Controllers/ActivoController.php:295
 * @route '/activos/etiquetas'
 */
 export const etiquetas = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -234,7 +234,7 @@ etiquetas.definition = {
 
 /**
 * @see \App\Http\Controllers\ActivoController::etiquetas
-* @see app/Http/Controllers/ActivoController.php:251
+* @see app/Http/Controllers/ActivoController.php:295
 * @route '/activos/etiquetas'
 */
 etiquetas.url = (options?: RouteQueryOptions) => {
@@ -243,7 +243,7 @@ etiquetas.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\ActivoController::etiquetas
-* @see app/Http/Controllers/ActivoController.php:251
+* @see app/Http/Controllers/ActivoController.php:295
 * @route '/activos/etiquetas'
 */
 etiquetas.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -253,7 +253,7 @@ etiquetas.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\ActivoController::etiquetas
-* @see app/Http/Controllers/ActivoController.php:251
+* @see app/Http/Controllers/ActivoController.php:295
 * @route '/activos/etiquetas'
 */
 etiquetas.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -263,7 +263,7 @@ etiquetas.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\ActivoController::etiquetas
-* @see app/Http/Controllers/ActivoController.php:251
+* @see app/Http/Controllers/ActivoController.php:295
 * @route '/activos/etiquetas'
 */
 const etiquetasForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -273,7 +273,7 @@ const etiquetasForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> 
 
 /**
 * @see \App\Http\Controllers\ActivoController::etiquetas
-* @see app/Http/Controllers/ActivoController.php:251
+* @see app/Http/Controllers/ActivoController.php:295
 * @route '/activos/etiquetas'
 */
 etiquetasForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -283,7 +283,7 @@ etiquetasForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> =>
 
 /**
 * @see \App\Http\Controllers\ActivoController::etiquetas
-* @see app/Http/Controllers/ActivoController.php:251
+* @see app/Http/Controllers/ActivoController.php:295
 * @route '/activos/etiquetas'
 */
 etiquetasForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -300,7 +300,7 @@ etiquetas.form = etiquetasForm
 
 /**
 * @see \App\Http\Controllers\ActivoController::etiquetasPdf
-* @see app/Http/Controllers/ActivoController.php:268
+* @see app/Http/Controllers/ActivoController.php:312
 * @route '/activos/etiquetas/pdf'
 */
 export const etiquetasPdf = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -315,7 +315,7 @@ etiquetasPdf.definition = {
 
 /**
 * @see \App\Http\Controllers\ActivoController::etiquetasPdf
-* @see app/Http/Controllers/ActivoController.php:268
+* @see app/Http/Controllers/ActivoController.php:312
 * @route '/activos/etiquetas/pdf'
 */
 etiquetasPdf.url = (options?: RouteQueryOptions) => {
@@ -324,7 +324,7 @@ etiquetasPdf.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\ActivoController::etiquetasPdf
-* @see app/Http/Controllers/ActivoController.php:268
+* @see app/Http/Controllers/ActivoController.php:312
 * @route '/activos/etiquetas/pdf'
 */
 etiquetasPdf.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -334,7 +334,7 @@ etiquetasPdf.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\ActivoController::etiquetasPdf
-* @see app/Http/Controllers/ActivoController.php:268
+* @see app/Http/Controllers/ActivoController.php:312
 * @route '/activos/etiquetas/pdf'
 */
 const etiquetasPdfForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -344,7 +344,7 @@ const etiquetasPdfForm = (options?: RouteQueryOptions): RouteFormDefinition<'pos
 
 /**
 * @see \App\Http\Controllers\ActivoController::etiquetasPdf
-* @see app/Http/Controllers/ActivoController.php:268
+* @see app/Http/Controllers/ActivoController.php:312
 * @route '/activos/etiquetas/pdf'
 */
 etiquetasPdfForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -356,7 +356,7 @@ etiquetasPdf.form = etiquetasPdfForm
 
 /**
 * @see \App\Http\Controllers\ActivoController::show
-* @see app/Http/Controllers/ActivoController.php:102
+* @see app/Http/Controllers/ActivoController.php:114
 * @route '/activos/{activo}'
 */
 export const show = (args: { activo: number | { id: number } } | [activo: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -371,7 +371,7 @@ show.definition = {
 
 /**
 * @see \App\Http\Controllers\ActivoController::show
-* @see app/Http/Controllers/ActivoController.php:102
+* @see app/Http/Controllers/ActivoController.php:114
 * @route '/activos/{activo}'
 */
 show.url = (args: { activo: number | { id: number } } | [activo: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -404,7 +404,7 @@ show.url = (args: { activo: number | { id: number } } | [activo: number | { id: 
 
 /**
 * @see \App\Http\Controllers\ActivoController::show
-* @see app/Http/Controllers/ActivoController.php:102
+* @see app/Http/Controllers/ActivoController.php:114
 * @route '/activos/{activo}'
 */
 show.get = (args: { activo: number | { id: number } } | [activo: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -414,7 +414,7 @@ show.get = (args: { activo: number | { id: number } } | [activo: number | { id: 
 
 /**
 * @see \App\Http\Controllers\ActivoController::show
-* @see app/Http/Controllers/ActivoController.php:102
+* @see app/Http/Controllers/ActivoController.php:114
 * @route '/activos/{activo}'
 */
 show.head = (args: { activo: number | { id: number } } | [activo: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -424,7 +424,7 @@ show.head = (args: { activo: number | { id: number } } | [activo: number | { id:
 
 /**
 * @see \App\Http\Controllers\ActivoController::show
-* @see app/Http/Controllers/ActivoController.php:102
+* @see app/Http/Controllers/ActivoController.php:114
 * @route '/activos/{activo}'
 */
 const showForm = (args: { activo: number | { id: number } } | [activo: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -434,7 +434,7 @@ const showForm = (args: { activo: number | { id: number } } | [activo: number | 
 
 /**
 * @see \App\Http\Controllers\ActivoController::show
-* @see app/Http/Controllers/ActivoController.php:102
+* @see app/Http/Controllers/ActivoController.php:114
 * @route '/activos/{activo}'
 */
 showForm.get = (args: { activo: number | { id: number } } | [activo: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -444,7 +444,7 @@ showForm.get = (args: { activo: number | { id: number } } | [activo: number | { 
 
 /**
 * @see \App\Http\Controllers\ActivoController::show
-* @see app/Http/Controllers/ActivoController.php:102
+* @see app/Http/Controllers/ActivoController.php:114
 * @route '/activos/{activo}'
 */
 showForm.head = (args: { activo: number | { id: number } } | [activo: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -461,7 +461,7 @@ show.form = showForm
 
 /**
 * @see \App\Http\Controllers\ActivoController::edit
-* @see app/Http/Controllers/ActivoController.php:123
+* @see app/Http/Controllers/ActivoController.php:135
 * @route '/activos/{activo}/editar'
 */
 export const edit = (args: { activo: number | { id: number } } | [activo: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -476,7 +476,7 @@ edit.definition = {
 
 /**
 * @see \App\Http\Controllers\ActivoController::edit
-* @see app/Http/Controllers/ActivoController.php:123
+* @see app/Http/Controllers/ActivoController.php:135
 * @route '/activos/{activo}/editar'
 */
 edit.url = (args: { activo: number | { id: number } } | [activo: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -509,7 +509,7 @@ edit.url = (args: { activo: number | { id: number } } | [activo: number | { id: 
 
 /**
 * @see \App\Http\Controllers\ActivoController::edit
-* @see app/Http/Controllers/ActivoController.php:123
+* @see app/Http/Controllers/ActivoController.php:135
 * @route '/activos/{activo}/editar'
 */
 edit.get = (args: { activo: number | { id: number } } | [activo: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -519,7 +519,7 @@ edit.get = (args: { activo: number | { id: number } } | [activo: number | { id: 
 
 /**
 * @see \App\Http\Controllers\ActivoController::edit
-* @see app/Http/Controllers/ActivoController.php:123
+* @see app/Http/Controllers/ActivoController.php:135
 * @route '/activos/{activo}/editar'
 */
 edit.head = (args: { activo: number | { id: number } } | [activo: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -529,7 +529,7 @@ edit.head = (args: { activo: number | { id: number } } | [activo: number | { id:
 
 /**
 * @see \App\Http\Controllers\ActivoController::edit
-* @see app/Http/Controllers/ActivoController.php:123
+* @see app/Http/Controllers/ActivoController.php:135
 * @route '/activos/{activo}/editar'
 */
 const editForm = (args: { activo: number | { id: number } } | [activo: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -539,7 +539,7 @@ const editForm = (args: { activo: number | { id: number } } | [activo: number | 
 
 /**
 * @see \App\Http\Controllers\ActivoController::edit
-* @see app/Http/Controllers/ActivoController.php:123
+* @see app/Http/Controllers/ActivoController.php:135
 * @route '/activos/{activo}/editar'
 */
 editForm.get = (args: { activo: number | { id: number } } | [activo: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -549,7 +549,7 @@ editForm.get = (args: { activo: number | { id: number } } | [activo: number | { 
 
 /**
 * @see \App\Http\Controllers\ActivoController::edit
-* @see app/Http/Controllers/ActivoController.php:123
+* @see app/Http/Controllers/ActivoController.php:135
 * @route '/activos/{activo}/editar'
 */
 editForm.head = (args: { activo: number | { id: number } } | [activo: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -566,7 +566,7 @@ edit.form = editForm
 
 /**
 * @see \App\Http\Controllers\ActivoController::update
-* @see app/Http/Controllers/ActivoController.php:135
+* @see app/Http/Controllers/ActivoController.php:147
 * @route '/activos/{activo}'
 */
 const update1a48873612817b5b1957efecfce8a355 = (args: { activo: number | { id: number } } | [activo: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -581,7 +581,7 @@ update1a48873612817b5b1957efecfce8a355.definition = {
 
 /**
 * @see \App\Http\Controllers\ActivoController::update
-* @see app/Http/Controllers/ActivoController.php:135
+* @see app/Http/Controllers/ActivoController.php:147
 * @route '/activos/{activo}'
 */
 update1a48873612817b5b1957efecfce8a355.url = (args: { activo: number | { id: number } } | [activo: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -614,7 +614,7 @@ update1a48873612817b5b1957efecfce8a355.url = (args: { activo: number | { id: num
 
 /**
 * @see \App\Http\Controllers\ActivoController::update
-* @see app/Http/Controllers/ActivoController.php:135
+* @see app/Http/Controllers/ActivoController.php:147
 * @route '/activos/{activo}'
 */
 update1a48873612817b5b1957efecfce8a355.put = (args: { activo: number | { id: number } } | [activo: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -624,7 +624,7 @@ update1a48873612817b5b1957efecfce8a355.put = (args: { activo: number | { id: num
 
 /**
 * @see \App\Http\Controllers\ActivoController::update
-* @see app/Http/Controllers/ActivoController.php:135
+* @see app/Http/Controllers/ActivoController.php:147
 * @route '/activos/{activo}'
 */
 const update1a48873612817b5b1957efecfce8a355Form = (args: { activo: number | { id: number } } | [activo: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -639,7 +639,7 @@ const update1a48873612817b5b1957efecfce8a355Form = (args: { activo: number | { i
 
 /**
 * @see \App\Http\Controllers\ActivoController::update
-* @see app/Http/Controllers/ActivoController.php:135
+* @see app/Http/Controllers/ActivoController.php:147
 * @route '/activos/{activo}'
 */
 update1a48873612817b5b1957efecfce8a355Form.put = (args: { activo: number | { id: number } } | [activo: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -655,7 +655,7 @@ update1a48873612817b5b1957efecfce8a355Form.put = (args: { activo: number | { id:
 update1a48873612817b5b1957efecfce8a355.form = update1a48873612817b5b1957efecfce8a355Form
 /**
 * @see \App\Http\Controllers\ActivoController::update
-* @see app/Http/Controllers/ActivoController.php:135
+* @see app/Http/Controllers/ActivoController.php:147
 * @route '/activos/{activo}'
 */
 const update1a48873612817b5b1957efecfce8a355 = (args: { activo: number | { id: number } } | [activo: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
@@ -670,7 +670,7 @@ update1a48873612817b5b1957efecfce8a355.definition = {
 
 /**
 * @see \App\Http\Controllers\ActivoController::update
-* @see app/Http/Controllers/ActivoController.php:135
+* @see app/Http/Controllers/ActivoController.php:147
 * @route '/activos/{activo}'
 */
 update1a48873612817b5b1957efecfce8a355.url = (args: { activo: number | { id: number } } | [activo: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -703,7 +703,7 @@ update1a48873612817b5b1957efecfce8a355.url = (args: { activo: number | { id: num
 
 /**
 * @see \App\Http\Controllers\ActivoController::update
-* @see app/Http/Controllers/ActivoController.php:135
+* @see app/Http/Controllers/ActivoController.php:147
 * @route '/activos/{activo}'
 */
 update1a48873612817b5b1957efecfce8a355.patch = (args: { activo: number | { id: number } } | [activo: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
@@ -713,7 +713,7 @@ update1a48873612817b5b1957efecfce8a355.patch = (args: { activo: number | { id: n
 
 /**
 * @see \App\Http\Controllers\ActivoController::update
-* @see app/Http/Controllers/ActivoController.php:135
+* @see app/Http/Controllers/ActivoController.php:147
 * @route '/activos/{activo}'
 */
 const update1a48873612817b5b1957efecfce8a355Form = (args: { activo: number | { id: number } } | [activo: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -728,7 +728,7 @@ const update1a48873612817b5b1957efecfce8a355Form = (args: { activo: number | { i
 
 /**
 * @see \App\Http\Controllers\ActivoController::update
-* @see app/Http/Controllers/ActivoController.php:135
+* @see app/Http/Controllers/ActivoController.php:147
 * @route '/activos/{activo}'
 */
 update1a48873612817b5b1957efecfce8a355Form.patch = (args: { activo: number | { id: number } } | [activo: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -755,7 +755,7 @@ export const update = {
 
 /**
 * @see \App\Http\Controllers\ActivoController::destroy
-* @see app/Http/Controllers/ActivoController.php:186
+* @see app/Http/Controllers/ActivoController.php:205
 * @route '/activos/{activo}'
 */
 export const destroy = (args: { activo: number | { id: number } } | [activo: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -770,7 +770,7 @@ destroy.definition = {
 
 /**
 * @see \App\Http\Controllers\ActivoController::destroy
-* @see app/Http/Controllers/ActivoController.php:186
+* @see app/Http/Controllers/ActivoController.php:205
 * @route '/activos/{activo}'
 */
 destroy.url = (args: { activo: number | { id: number } } | [activo: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -803,7 +803,7 @@ destroy.url = (args: { activo: number | { id: number } } | [activo: number | { i
 
 /**
 * @see \App\Http\Controllers\ActivoController::destroy
-* @see app/Http/Controllers/ActivoController.php:186
+* @see app/Http/Controllers/ActivoController.php:205
 * @route '/activos/{activo}'
 */
 destroy.delete = (args: { activo: number | { id: number } } | [activo: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -813,7 +813,7 @@ destroy.delete = (args: { activo: number | { id: number } } | [activo: number | 
 
 /**
 * @see \App\Http\Controllers\ActivoController::destroy
-* @see app/Http/Controllers/ActivoController.php:186
+* @see app/Http/Controllers/ActivoController.php:205
 * @route '/activos/{activo}'
 */
 const destroyForm = (args: { activo: number | { id: number } } | [activo: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -828,7 +828,7 @@ const destroyForm = (args: { activo: number | { id: number } } | [activo: number
 
 /**
 * @see \App\Http\Controllers\ActivoController::destroy
-* @see app/Http/Controllers/ActivoController.php:186
+* @see app/Http/Controllers/ActivoController.php:205
 * @route '/activos/{activo}'
 */
 destroyForm.delete = (args: { activo: number | { id: number } } | [activo: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -845,7 +845,7 @@ destroy.form = destroyForm
 
 /**
 * @see \App\Http\Controllers\ActivoController::movilizar
-* @see app/Http/Controllers/ActivoController.php:216
+* @see app/Http/Controllers/ActivoController.php:245
 * @route '/activos/{activo}/movilizar'
 */
 export const movilizar = (args: { activo: number | { id: number } } | [activo: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -860,7 +860,7 @@ movilizar.definition = {
 
 /**
 * @see \App\Http\Controllers\ActivoController::movilizar
-* @see app/Http/Controllers/ActivoController.php:216
+* @see app/Http/Controllers/ActivoController.php:245
 * @route '/activos/{activo}/movilizar'
 */
 movilizar.url = (args: { activo: number | { id: number } } | [activo: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -893,7 +893,7 @@ movilizar.url = (args: { activo: number | { id: number } } | [activo: number | {
 
 /**
 * @see \App\Http\Controllers\ActivoController::movilizar
-* @see app/Http/Controllers/ActivoController.php:216
+* @see app/Http/Controllers/ActivoController.php:245
 * @route '/activos/{activo}/movilizar'
 */
 movilizar.post = (args: { activo: number | { id: number } } | [activo: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -903,7 +903,7 @@ movilizar.post = (args: { activo: number | { id: number } } | [activo: number | 
 
 /**
 * @see \App\Http\Controllers\ActivoController::movilizar
-* @see app/Http/Controllers/ActivoController.php:216
+* @see app/Http/Controllers/ActivoController.php:245
 * @route '/activos/{activo}/movilizar'
 */
 const movilizarForm = (args: { activo: number | { id: number } } | [activo: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -913,7 +913,7 @@ const movilizarForm = (args: { activo: number | { id: number } } | [activo: numb
 
 /**
 * @see \App\Http\Controllers\ActivoController::movilizar
-* @see app/Http/Controllers/ActivoController.php:216
+* @see app/Http/Controllers/ActivoController.php:245
 * @route '/activos/{activo}/movilizar'
 */
 movilizarForm.post = (args: { activo: number | { id: number } } | [activo: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({

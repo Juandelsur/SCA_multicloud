@@ -35,4 +35,8 @@ return [
         ],
     ],
 
+    'auditoria' => [
+        'url' => env('AUDITORIA_SERVICE_URL'),
+    ],
+
 ];

@@ -1,6 +1,6 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../wayfinder'
 /**
-* @see routes/web.php:226
+* @see routes/web.php:306
 * @route '/gestion/activos'
 */
 export const activos = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -14,7 +14,7 @@ activos.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:226
+* @see routes/web.php:306
 * @route '/gestion/activos'
 */
 activos.url = (options?: RouteQueryOptions) => {
@@ -22,7 +22,7 @@ activos.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:226
+* @see routes/web.php:306
 * @route '/gestion/activos'
 */
 activos.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -31,7 +31,7 @@ activos.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:226
+* @see routes/web.php:306
 * @route '/gestion/activos'
 */
 activos.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -40,7 +40,7 @@ activos.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:226
+* @see routes/web.php:306
 * @route '/gestion/activos'
 */
 const activosForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -49,7 +49,7 @@ const activosForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> =>
 })
 
 /**
-* @see routes/web.php:226
+* @see routes/web.php:306
 * @route '/gestion/activos'
 */
 activosForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -58,7 +58,7 @@ activosForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => (
 })
 
 /**
-* @see routes/web.php:226
+* @see routes/web.php:306
 * @route '/gestion/activos'
 */
 activosForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -74,7 +74,7 @@ activosForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => 
 activos.form = activosForm
 
 /**
-* @see routes/web.php:303
+* @see routes/web.php:383
 * @route '/gestion/estados-activo'
 */
 export const estadosActivo = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -88,7 +88,7 @@ estadosActivo.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:303
+* @see routes/web.php:383
 * @route '/gestion/estados-activo'
 */
 estadosActivo.url = (options?: RouteQueryOptions) => {
@@ -96,7 +96,7 @@ estadosActivo.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:303
+* @see routes/web.php:383
 * @route '/gestion/estados-activo'
 */
 estadosActivo.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -105,7 +105,7 @@ estadosActivo.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:303
+* @see routes/web.php:383
 * @route '/gestion/estados-activo'
 */
 estadosActivo.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -114,7 +114,7 @@ estadosActivo.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => (
 })
 
 /**
-* @see routes/web.php:303
+* @see routes/web.php:383
 * @route '/gestion/estados-activo'
 */
 const estadosActivoForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -123,7 +123,7 @@ const estadosActivoForm = (options?: RouteQueryOptions): RouteFormDefinition<'ge
 })
 
 /**
-* @see routes/web.php:303
+* @see routes/web.php:383
 * @route '/gestion/estados-activo'
 */
 estadosActivoForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -132,7 +132,7 @@ estadosActivoForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'
 })
 
 /**
-* @see routes/web.php:303
+* @see routes/web.php:383
 * @route '/gestion/estados-activo'
 */
 estadosActivoForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -148,7 +148,7 @@ estadosActivoForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get
 estadosActivo.form = estadosActivoForm
 
 /**
-* @see routes/web.php:304
+* @see routes/web.php:384
 * @route '/gestion/departamentos'
 */
 export const departamentos = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -162,7 +162,7 @@ departamentos.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:304
+* @see routes/web.php:384
 * @route '/gestion/departamentos'
 */
 departamentos.url = (options?: RouteQueryOptions) => {
@@ -170,7 +170,7 @@ departamentos.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:304
+* @see routes/web.php:384
 * @route '/gestion/departamentos'
 */
 departamentos.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -179,7 +179,7 @@ departamentos.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:304
+* @see routes/web.php:384
 * @route '/gestion/departamentos'
 */
 departamentos.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -188,7 +188,7 @@ departamentos.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => (
 })
 
 /**
-* @see routes/web.php:304
+* @see routes/web.php:384
 * @route '/gestion/departamentos'
 */
 const departamentosForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -197,7 +197,7 @@ const departamentosForm = (options?: RouteQueryOptions): RouteFormDefinition<'ge
 })
 
 /**
-* @see routes/web.php:304
+* @see routes/web.php:384
 * @route '/gestion/departamentos'
 */
 departamentosForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -206,7 +206,7 @@ departamentosForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'
 })
 
 /**
-* @see routes/web.php:304
+* @see routes/web.php:384
 * @route '/gestion/departamentos'
 */
 departamentosForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -222,7 +222,7 @@ departamentosForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get
 departamentos.form = departamentosForm
 
 /**
-* @see routes/web.php:305
+* @see routes/web.php:385
 * @route '/gestion/roles'
 */
 export const roles = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -236,7 +236,7 @@ roles.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:305
+* @see routes/web.php:385
 * @route '/gestion/roles'
 */
 roles.url = (options?: RouteQueryOptions) => {
@@ -244,7 +244,7 @@ roles.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:305
+* @see routes/web.php:385
 * @route '/gestion/roles'
 */
 roles.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -253,7 +253,7 @@ roles.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:305
+* @see routes/web.php:385
 * @route '/gestion/roles'
 */
 roles.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -262,7 +262,7 @@ roles.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:305
+* @see routes/web.php:385
 * @route '/gestion/roles'
 */
 const rolesForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -271,7 +271,7 @@ const rolesForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => (
 })
 
 /**
-* @see routes/web.php:305
+* @see routes/web.php:385
 * @route '/gestion/roles'
 */
 rolesForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -280,7 +280,7 @@ rolesForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:305
+* @see routes/web.php:385
 * @route '/gestion/roles'
 */
 rolesForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -296,7 +296,7 @@ rolesForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 roles.form = rolesForm
 
 /**
-* @see routes/web.php:306
+* @see routes/web.php:386
 * @route '/gestion/tipos-equipo'
 */
 export const tiposEquipo = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -310,7 +310,7 @@ tiposEquipo.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:306
+* @see routes/web.php:386
 * @route '/gestion/tipos-equipo'
 */
 tiposEquipo.url = (options?: RouteQueryOptions) => {
@@ -318,7 +318,7 @@ tiposEquipo.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:306
+* @see routes/web.php:386
 * @route '/gestion/tipos-equipo'
 */
 tiposEquipo.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -327,7 +327,7 @@ tiposEquipo.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:306
+* @see routes/web.php:386
 * @route '/gestion/tipos-equipo'
 */
 tiposEquipo.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -336,7 +336,7 @@ tiposEquipo.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:306
+* @see routes/web.php:386
 * @route '/gestion/tipos-equipo'
 */
 const tiposEquipoForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -345,7 +345,7 @@ const tiposEquipoForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'
 })
 
 /**
-* @see routes/web.php:306
+* @see routes/web.php:386
 * @route '/gestion/tipos-equipo'
 */
 tiposEquipoForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -354,7 +354,7 @@ tiposEquipoForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> 
 })
 
 /**
-* @see routes/web.php:306
+* @see routes/web.php:386
 * @route '/gestion/tipos-equipo'
 */
 tiposEquipoForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -370,7 +370,7 @@ tiposEquipoForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'>
 tiposEquipo.form = tiposEquipoForm
 
 /**
-* @see routes/web.php:307
+* @see routes/web.php:387
 * @route '/gestion/ubicaciones'
 */
 export const ubicaciones = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -384,7 +384,7 @@ ubicaciones.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:307
+* @see routes/web.php:387
 * @route '/gestion/ubicaciones'
 */
 ubicaciones.url = (options?: RouteQueryOptions) => {
@@ -392,7 +392,7 @@ ubicaciones.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:307
+* @see routes/web.php:387
 * @route '/gestion/ubicaciones'
 */
 ubicaciones.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -401,7 +401,7 @@ ubicaciones.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:307
+* @see routes/web.php:387
 * @route '/gestion/ubicaciones'
 */
 ubicaciones.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -410,7 +410,7 @@ ubicaciones.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:307
+* @see routes/web.php:387
 * @route '/gestion/ubicaciones'
 */
 const ubicacionesForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -419,7 +419,7 @@ const ubicacionesForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'
 })
 
 /**
-* @see routes/web.php:307
+* @see routes/web.php:387
 * @route '/gestion/ubicaciones'
 */
 ubicacionesForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -428,7 +428,7 @@ ubicacionesForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> 
 })
 
 /**
-* @see routes/web.php:307
+* @see routes/web.php:387
 * @route '/gestion/ubicaciones'
 */
 ubicacionesForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -444,7 +444,7 @@ ubicacionesForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'>
 ubicaciones.form = ubicacionesForm
 
 /**
-* @see routes/web.php:308
+* @see routes/web.php:388
 * @route '/gestion/usuarios'
 */
 export const usuarios = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -458,7 +458,7 @@ usuarios.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:308
+* @see routes/web.php:388
 * @route '/gestion/usuarios'
 */
 usuarios.url = (options?: RouteQueryOptions) => {
@@ -466,7 +466,7 @@ usuarios.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:308
+* @see routes/web.php:388
 * @route '/gestion/usuarios'
 */
 usuarios.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -475,7 +475,7 @@ usuarios.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:308
+* @see routes/web.php:388
 * @route '/gestion/usuarios'
 */
 usuarios.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -484,7 +484,7 @@ usuarios.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:308
+* @see routes/web.php:388
 * @route '/gestion/usuarios'
 */
 const usuariosForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -493,7 +493,7 @@ const usuariosForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> =
 })
 
 /**
-* @see routes/web.php:308
+* @see routes/web.php:388
 * @route '/gestion/usuarios'
 */
 usuariosForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -502,7 +502,7 @@ usuariosForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => 
 })
 
 /**
-* @see routes/web.php:308
+* @see routes/web.php:388
 * @route '/gestion/usuarios'
 */
 usuariosForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({

@@ -73,8 +73,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
                 'ultimosMovimientos' => $ultimosMovimientos,
             ]);
         })->name('dashboard');
-
-        Route::get('dashboard/otros', fn () => inertia('Admin/Otros'))->name('dashboard.otros');
     });
 
     // =========================================================
@@ -145,6 +143,88 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::middleware('permission:auditoria.ver')->group(function () {
         Route::get('auditoria', [AuditoriaController::class, 'index'])->name('auditoria.index');
         Route::get('auditoria/{auditoriaLog}', [AuditoriaController::class, 'show'])->name('auditoria.show');
+
+        // "Otros" del panel Admin: eventos de servicio-auditoria (microservicio),
+        // no confundir con auditoria.index/show de arriba (AuditoriaLog propio de
+        // Laravel). Bajo demanda: sin filtros, no se llama al microservicio.
+        Route::get('dashboard/otros', function (\Illuminate\Http\Request $request) {
+            $textoActivo = trim((string) $request->query('activo', ''));
+            $accion      = trim((string) $request->query('accion', ''));
+            $tieneFiltros = $textoActivo !== '' || $accion !== '';
+
+            $eventos = null;
+            $error   = null;
+
+            if ($tieneFiltros) {
+                $activoIds = null;
+
+                if ($textoActivo !== '') {
+                    $activoIds = \App\Models\Activo::where('codigo_inventario', 'ilike', "%{$textoActivo}%")
+                        ->orWhere('marca', 'ilike', "%{$textoActivo}%")
+                        ->orWhere('modelo', 'ilike', "%{$textoActivo}%")
+                        ->limit(100)
+                        ->pluck('id');
+                }
+
+                // Si el texto no matchea ningún activo, no hace falta ni llamar
+                // al microservicio: la respuesta ya sabemos que es vacía.
+                if ($activoIds !== null && $activoIds->isEmpty()) {
+                    $eventos = [];
+                } else {
+                    $url = config('services.auditoria.url');
+
+                    try {
+                        $query = ['limit' => 200];
+
+                        if ($accion !== '') {
+                            $query['accion'] = $accion;
+                        }
+
+                        $response = \Illuminate\Support\Facades\Http::timeout(3)->get("{$url}/eventos", $query);
+
+                        if ($response->successful()) {
+                            $data = $response->json();
+
+                            if ($activoIds !== null) {
+                                $idsSet = $activoIds->all();
+                                $data   = array_values(array_filter(
+                                    $data,
+                                    fn ($e) => in_array($e['activo_id'], $idsSet)
+                                ));
+                            }
+
+                            // Enriquece con datos del activo (el microservicio solo
+                            // guarda activo_id, no marca/modelo/código).
+                            $idsEnEventos = collect($data)->pluck('activo_id')->unique()->values();
+                            $activosMap   = \App\Models\Activo::whereIn('id', $idsEnEventos)
+                                ->get(['id', 'codigo_inventario', 'marca', 'modelo'])
+                                ->keyBy('id');
+
+                            $eventos = collect($data)->map(function ($e) use ($activosMap) {
+                                $a = $activosMap->get($e['activo_id']);
+                                $e['activo'] = $a ? [
+                                    'codigo_inventario' => $a->codigo_inventario,
+                                    'marca'             => $a->marca,
+                                    'modelo'            => $a->modelo,
+                                ] : null;
+
+                                return $e;
+                            })->values()->all();
+                        } else {
+                            $error = 'No se pudo cargar el historial de auditoría en este momento.';
+                        }
+                    } catch (\Throwable $e) {
+                        $error = 'No se pudo cargar el historial de auditoría en este momento.';
+                    }
+                }
+            }
+
+            return inertia('Admin/Otros', [
+                'eventos' => $eventos,
+                'error'   => $error,
+                'filtros' => ['activo' => $textoActivo, 'accion' => $accion],
+            ]);
+        })->name('dashboard.otros');
     });
 
     // =========================================================
