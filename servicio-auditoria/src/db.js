@@ -8,6 +8,7 @@ const pool = new Pool({
     database: process.env.DB_DATABASE || 'sca_it',
     user: process.env.DB_USERNAME || 'sca_user',
     password: process.env.DB_PASSWORD || 'sca_secret',
+    ssl: { rejectUnauthorized: false }, // RDS usa certificados propios de AWS
 });
 
 module.exports = pool;

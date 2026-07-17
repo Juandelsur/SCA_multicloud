@@ -196,9 +196,18 @@ Route::middleware(['auth', 'verified'])->group(function () {
                                 return $e;
                             })->values()->all();
                         } else {
+                            \Illuminate\Support\Facades\Log::warning('No se pudo cargar el historial desde servicio-auditoria', [
+                                'accion' => $accion,
+                                'status' => $response->status(),
+                                'body' => $response->body(),
+                            ]);
                             $error = 'No se pudo cargar el historial de auditoría en este momento.';
                         }
                     } catch (\Throwable $e) {
+                        \Illuminate\Support\Facades\Log::warning('No se pudo cargar el historial desde servicio-auditoria', [
+                            'accion' => $accion,
+                            'error' => $e->getMessage(),
+                        ]);
                         $error = 'No se pudo cargar el historial de auditoría en este momento.';
                     }
                 }

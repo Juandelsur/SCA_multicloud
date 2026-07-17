@@ -244,7 +244,7 @@ jobs:
               export DB_PORT=5432
               export DB_DATABASE=sca_it
               if [ "$SERVICE_NAME" = "reportes" ]; then
-                export DB_PASSWORD="$DEPLOY_REPORTES_DB_PASSWORD"
+                export REPORTES_DB_PASSWORD="$DEPLOY_REPORTES_DB_PASSWORD"
               else
                 export DB_PASSWORD="$DEPLOY_DB_PASSWORD"
               fi
@@ -286,7 +286,7 @@ jobs:
               export DB_PORT=5432
               export DB_DATABASE=sca_it
               if [ "$SERVICE_NAME" = "reportes" ]; then
-                export DB_PASSWORD="$DEPLOY_REPORTES_DB_PASSWORD"
+                export REPORTES_DB_PASSWORD="$DEPLOY_REPORTES_DB_PASSWORD"
               else
                 export DB_PASSWORD="$DEPLOY_DB_PASSWORD"
               fi
